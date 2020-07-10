@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "380110250463",
+    "firebase_url": "https://watchittogether-2b467.firebaseio.com",
+    "project_id": "watchittogether-2b467",
+    "storage_bucket": "watchittogether-2b467.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:380110250463:android:fcabf18fcd0c4efaf5646a",
+        "android_client_info": {
+          "package_name": "com.hossam.hasanin.watchittogeter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "380110250463-f8hlfurgh7o40sk6dkl89dc02d2mjmht.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hossam.hasanin.watchittogeter",
+            "certificate_hash": "69c5b4d0fd5760d537d3639d93c5ae521b32a498"
+          }
+        },
+        {
+          "client_id": "380110250463-lk1to6kr0fe2rcj13rbph4uctvd5sri6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqwV_xEjlGg4k6xCDeJ3bl5ocPmTDbb9I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "380110250463-lk1to6kr0fe2rcj13rbph4uctvd5sri6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

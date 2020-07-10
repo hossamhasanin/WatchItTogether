@@ -1,17 +1,10 @@
 package com.hossam.hasanin.watchittogeter
 
 import android.app.Application
-import com.hossam.hasanin.watchittogeter.di.DaggerAppComponent
-import dagger.android.AndroidInjector
-import dagger.android.DaggerApplication
+import dagger.hilt.android.HiltAndroidApp
 
-open class BaseApplication : DaggerApplication() {
+@HiltAndroidApp
+class BaseApplication : Application() {
 
-    override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
-        return DaggerAppComponent.factory().application(applicationContext as Application?)
-    }
 
-    override fun onCreate() {
-        super.onCreate()
-    }
 }

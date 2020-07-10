@@ -10,11 +10,14 @@ import android.util.Log
 import android.view.*
 import android.webkit.*
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -23,15 +26,22 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayoutMediator
+import com.hossam.hasanin.watchittogeter.users.UsersUseCases
+import com.hossam.hasanin.watchittogeter.users.UsersViewModel
+import com.hossam.hasanin.watchittogeter.watchRooms.WatchRoomsViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.InputStream
 import java.lang.Exception
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     //private lateinit var appBarConfiguration: AppBarConfiguration
@@ -60,6 +70,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
 
+        // ViewPager
+        val pagerAdapter = ViewPagerAdapter(this)
+        pager.adapter = pagerAdapter
+        TabLayoutMediator(tab_layout, pager) { tab, position ->
+            tab.text = if (position == 0) "Users" else "Rooms"
+        }.attach()
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
