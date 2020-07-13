@@ -8,4 +8,8 @@ import io.reactivex.Maybe
 interface MainRepository {
     fun getUsersNetwork(lastId: String): Maybe<List<User>>
     fun createRoomNetwork(watchRoom: WatchRoom): Completable
+    fun updateUserWatchRoom(userId: String , roomId: String): Completable
+    fun addContacts(query: String): Maybe<User>
+
+    fun getWatchRoomsHistory(lastId: String): Maybe<List<WatchRoom>>
 }

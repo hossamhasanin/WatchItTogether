@@ -9,5 +9,8 @@ data class UsersViewState(
     val loadingMore: Boolean,
     val refresh: Boolean,
     val creatingRoom: Boolean,
-    val roomCreated: Boolean
+    val roomCreated: Boolean,
+    val createRoomError: Exception?,
+    val addingContact: Boolean,
+    val addContactError: Exception?
 )

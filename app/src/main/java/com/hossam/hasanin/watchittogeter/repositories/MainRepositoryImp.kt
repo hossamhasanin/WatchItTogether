@@ -17,4 +17,16 @@ class MainRepositoryImp @Inject constructor(private val networkDataSourceImp: Da
     override fun createRoomNetwork(watchRoom: WatchRoom): Completable {
         return networkDataSourceImp.createRoom(watchRoom)
     }
+
+    override fun updateUserWatchRoom(userId: String, roomId: String): Completable {
+        return networkDataSourceImp.updateUserWatchRoom(userId , roomId)
+    }
+
+    override fun addContacts(query: String): Maybe<User> {
+        return networkDataSourceImp.addContact(query)
+    }
+
+    override fun getWatchRoomsHistory(lastId: String): Maybe<List<WatchRoom>> {
+        return networkDataSourceImp.getWatchRoomsHistory(lastId)
+    }
 }

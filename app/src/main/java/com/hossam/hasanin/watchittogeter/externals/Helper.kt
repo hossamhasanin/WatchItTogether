@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 
 
-fun RecyclerView.onEndReached(block: () -> Unit) {
+fun RecyclerView.onEndReachedStaggerdLayout(block: () -> Unit) {
     addOnScrollListener(object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
@@ -22,6 +22,23 @@ fun RecyclerView.onEndReached(block: () -> Unit) {
                     if (visibleItems + pastVisibleItem == totalCount ) {
                         block()
                     }
+                }
+            }
+        }
+    })
+}
+
+fun RecyclerView.onEndReachedLinearLayout(block: () -> Unit) {
+    addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+            if (dy > 0) {
+                val visibleItems = recyclerView.layoutManager!!.childCount
+                val totalCount = recyclerView.layoutManager!!.itemCount
+                val pastVisibleItem =
+                    (recyclerView.layoutManager!! as LinearLayoutManager).findFirstVisibleItemPosition()
+                if (visibleItems + pastVisibleItem == totalCount ) {
+                    block()
                 }
             }
         }

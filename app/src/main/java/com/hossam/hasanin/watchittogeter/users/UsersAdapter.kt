@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.hossam.hasanin.watchittogeter.R
+import com.hossam.hasanin.watchittogeter.models.User
 import kotlinx.android.synthetic.main.user_card.view.*
 import kotlinx.android.synthetic.main.users_fragment.view.*
 import javax.inject.Inject
@@ -14,7 +15,7 @@ import javax.inject.Inject
 class UsersAdapter @Inject constructor():
     ListAdapter<UserWrapper, UsersAdapter.ViewHolder>(UserWrapper.diffUtil) {
 
-    var doAction: (String) -> Unit = {}
+    var doAction: (User) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
@@ -40,11 +41,11 @@ class UsersAdapter @Inject constructor():
     }
 
     abstract class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
-        abstract fun onBind(pos: Int, userWrapper: UserWrapper , doAction: (String) -> Unit)
+        abstract fun onBind(pos: Int, userWrapper: UserWrapper , doAction: (User) -> Unit)
     }
 
     class LoadingViewHolder(view: View): ViewHolder(view){
-        override fun onBind(pos: Int, userWrapper: UserWrapper , doAction: (String) -> Unit) {
+        override fun onBind(pos: Int, userWrapper: UserWrapper , doAction: (User) -> Unit) {
 
         }
     }
@@ -54,7 +55,7 @@ class UsersAdapter @Inject constructor():
         private val img = view.iv_user_image
         private val userCont = view.cont_user
 
-        override fun onBind(pos: Int, userWrapper: UserWrapper , doAction: (String) -> Unit) {
+        override fun onBind(pos: Int, userWrapper: UserWrapper , doAction: (User) -> Unit) {
             name.text = userWrapper.user!!.name
             if (userWrapper.user.gender == 0){
                 Glide.with(img.context).load(R.drawable.female).into(img)
@@ -62,7 +63,7 @@ class UsersAdapter @Inject constructor():
                 Glide.with(img.context).load(R.drawable.male).into(img)
             }
             userCont.setOnClickListener {
-                doAction(userWrapper.user.id!!)
+                doAction(userWrapper.user)
             }
         }
 

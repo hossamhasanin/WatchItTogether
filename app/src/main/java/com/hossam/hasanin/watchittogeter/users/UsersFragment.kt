@@ -8,18 +8,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.google.firebase.firestore.FieldValue
-import com.google.firestore.v1.DocumentTransform
 import com.hossam.hasanin.watchittogeter.R
-import com.hossam.hasanin.watchittogeter.externals.onEndReached
-import com.hossam.hasanin.watchittogeter.models.User
+import com.hossam.hasanin.watchittogeter.externals.onEndReachedStaggerdLayout
 import com.hossam.hasanin.watchittogeter.models.WatchRoom
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import kotlinx.android.synthetic.main.add_contacts.view.*
 import kotlinx.android.synthetic.main.get_watch_room_data.view.*
 import kotlinx.android.synthetic.main.users_fragment.*
 import javax.inject.Inject
@@ -45,7 +42,11 @@ class UsersFragment : Fragment() {
 
 
         usersAdapter.doAction = {
-            popUpGetRoomData(it)
+            if (it.currentRoomId!!.isNotEmpty()){
+                Toast.makeText(requireContext() , "This user is inside a room" , Toast.LENGTH_LONG).show()
+            } else {
+                popUpGetRoomData(it.id!!)
+            }
         }
 
         disposable = viewModel.viewState().observeOn(AndroidSchedulers.mainThread()).subscribe {
@@ -88,12 +89,17 @@ class UsersFragment : Fragment() {
         user_rec.layoutManager = StaggeredGridLayoutManager(4 , StaggeredGridLayoutManager.VERTICAL)
         user_rec.adapter = usersAdapter
 
-        user_rec.onEndReached {
+        user_rec.onEndReachedStaggerdLayout {
             viewModel.loadMore()
         }
+
+        addContacts.setOnClickListener {
+            popUpAddNewContact()
+        }
+
     }
 
-    private fun popUpGetRoomData(id: String){
+    private fun popUpGetRoomData(userId: String){
         val dialog = AlertDialog.Builder(requireContext())
         val layout = LayoutInflater.from(requireContext()).inflate(R.layout.get_watch_room_data , null)
         dialog.setView(layout)
@@ -102,11 +108,25 @@ class UsersFragment : Fragment() {
         layout.btn_create.setOnClickListener {
             val roomName = layout.tv_room_name.text.toString()
             val mp4Url = layout.tv_mp4_url.text.toString()
-            val watchRoom = WatchRoom(id = System.currentTimeMillis().toString(), name = roomName , mp4Url = mp4Url)
+            val watchRoom = WatchRoom(id = System.currentTimeMillis().toString(), name = roomName
+                , mp4Url = mp4Url , users = arrayListOf(viewModel.currentUser.uid , userId))
             viewModel.createRoom(watchRoom)
             ad.dismiss()
         }
 
+        ad.show()
+    }
+
+    private fun popUpAddNewContact(){
+        val dialog = AlertDialog.Builder(requireContext())
+        val layout = LayoutInflater.from(requireContext()).inflate(R.layout.add_contacts , null)
+        dialog.setView(layout)
+        val ad = dialog.create()
+        layout.btn_add.setOnClickListener {
+            val query = layout.et_phone_email.text.toString()
+            viewModel.addContact(query)
+            ad.dismiss()
+        }
         ad.show()
     }
 
