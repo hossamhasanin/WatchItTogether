@@ -82,6 +82,10 @@ dependencies {
     // RxFireStore
     api 'com.github.FrangSierra:RxFirebase:1.5.6'
 
+    // exoplayer
+    api 'com.google.android.exoplayer:exoplayer:2.11.7'
+
+
     // modules
     implementation project(":authentication")
 
