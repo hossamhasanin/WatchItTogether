@@ -2,6 +2,7 @@ package com.hossam.hasanin.authentication
 
 import com.hossam.hasanin.authentication.login.LoginViewState
 import com.hossam.hasanin.authentication.signup.SignupViewState
+import com.hossam.hasanin.watchittogeter.models.User
 import com.hossam.hasanin.watchittogeter.repositories.AuthRepository
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
