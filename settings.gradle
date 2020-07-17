@@ -1,2 +1,3 @@
+include ':watchRoom'
 include ':app'
 rootProject.name = "WatchItTogeter"

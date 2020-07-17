@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/watch_nav"
+    app:startDestination="@id/groupFragment">
+
+    <fragment
+        android:id="@+id/groupFragment"
+        android:name="com.hossam.hasanin.watchroom.groupRoom.GroupFragment"
+        android:label="group_fragment"
+        tools:layout="@layout/group_fragment" />
+    <fragment
+        android:id="@+id/playFragment"
+        android:name="com.hossam.hasanin.watchroom.playRoom.PlayFragment"
+        android:label="play_fragment"
+        tools:layout="@layout/play_fragment" />
+</navigation>
