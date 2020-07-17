@@ -21,5 +21,6 @@ data class User (
                     || oldItem.phone.equals(newItem.phone) || oldItem.gender == newItem.gender
                     || oldItem.currentRoomId.equals(newItem.currentRoomId)
         }
+        var current: User? = null
     }
 }
