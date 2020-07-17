@@ -1,5 +1,6 @@
 package com.hossam.hasanin.watchittogeter.repositories
 
+import com.google.firebase.firestore.DocumentChange
 import com.hossam.hasanin.watchittogeter.models.User
 import com.hossam.hasanin.watchittogeter.models.WatchRoom
 import io.reactivex.Completable
@@ -12,4 +13,5 @@ interface MainRepository {
     fun addContacts(query: String): Maybe<User>
 
     fun getWatchRoomsHistory(lastId: String): Maybe<List<WatchRoom>>
+    fun roomUsersListener(roomId: String): Maybe<List<DocumentChange>>
 }

@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 include ':watchRoom'
-=======
 include ':authentication'
->>>>>>> 0b048c95498496807a9f6433571808c86d3210b2
 include ':app'
 rootProject.name = "WatchItTogeter"

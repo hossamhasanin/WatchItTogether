@@ -1,6 +1,7 @@
 package com.hossam.hasanin.watchittogeter.repositories
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentChange
 import com.hossam.hasanin.watchittogeter.dataScources.DataSource
 import com.hossam.hasanin.watchittogeter.dataScources.NetworkDataSourceImp
 import com.hossam.hasanin.watchittogeter.models.User
@@ -28,5 +29,9 @@ class MainRepositoryImp @Inject constructor(private val networkDataSourceImp: Da
 
     override fun getWatchRoomsHistory(lastId: String): Maybe<List<WatchRoom>> {
         return networkDataSourceImp.getWatchRoomsHistory(lastId)
+    }
+
+    override fun roomUsersListener(roomId: String): Maybe<List<DocumentChange>> {
+        return networkDataSourceImp.roomUsersListener(roomId)
     }
 }
