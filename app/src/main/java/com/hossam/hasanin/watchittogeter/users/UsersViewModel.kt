@@ -87,9 +87,11 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
         _addingContact.onNext(query)
     }
 
-    fun clearCreatingRoomStates(){
-        postViewStateValue(viewStateValue().copy(roomCreated = false))
+    fun clearStates(){
+        postViewStateValue(viewStateValue().copy(roomCreated = false , createRoomError = null
+            , creatingRoom = false , addContactError = null , addingContact = false))
     }
+
 
     private fun postViewStateValue(viewState: UsersViewState){
         _viewState.onNext(viewState)

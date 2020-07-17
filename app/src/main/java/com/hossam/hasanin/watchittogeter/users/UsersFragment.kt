@@ -75,7 +75,17 @@ class UsersFragment : Fragment() {
 
             if (it.roomCreated){
                 Toast.makeText(requireContext() , "The room created successfully." , Toast.LENGTH_LONG).show()
-                viewModel.clearCreatingRoomStates()
+                // go to the room
+            }
+
+            if (it.createRoomError != null){
+                Toast.makeText(requireContext() , it.createRoomError.localizedMessage , Toast.LENGTH_LONG).show()
+                viewModel.clearStates()
+            }
+
+            if (it.addContactError != null){
+                Toast.makeText(requireContext() , it.addContactError.localizedMessage , Toast.LENGTH_LONG).show()
+                viewModel.clearStates()
             }
 
             if (it.users.isNotEmpty()){

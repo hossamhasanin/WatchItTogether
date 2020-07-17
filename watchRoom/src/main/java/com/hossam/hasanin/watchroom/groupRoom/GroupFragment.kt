@@ -6,13 +6,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
+import com.hossam.hasanin.watchittogeter.users.UsersViewModel
 import com.hossam.hasanin.watchroom.R
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class GroupFragment : Fragment() {
 
-    private lateinit var viewModel: GroupViewModel
+    private val viewModel by viewModels<GroupViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -23,8 +25,6 @@ class GroupFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(GroupViewModel::class.java)
-        // TODO: Use the ViewModel
     }
 
 }
