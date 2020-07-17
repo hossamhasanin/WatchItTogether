@@ -17,7 +17,8 @@ class AuthenticationDataSourceImp @Inject constructor(private val mAuth: Firebas
     override fun signup(user: User , pass: String): Maybe<AuthResult> {
        return Maybe.create { emmit ->
             mAuth.createUserWithEmailAndPassword(user.email!! , pass).addOnSuccessListener { auth->
-                firestore.collection(USERS_COLLECTION).document(auth.user!!.uid).set(user)
+                val u = user.copy(id = auth.user!!.uid)
+                firestore.collection(USERS_COLLECTION).document(auth.user!!.uid).set(u)
                     .addOnSuccessListener { emmit.onSuccess(auth) }
                     .addOnFailureListener { emmit.onError(Throwable("Error in saving user data")) }
             }.addOnFailureListener { emmit.onError(Throwable(it.localizedMessage)) }
