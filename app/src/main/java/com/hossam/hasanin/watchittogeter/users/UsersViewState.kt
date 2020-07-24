@@ -10,6 +10,7 @@ data class UsersViewState(
     val refresh: Boolean,
     val creatingRoom: Boolean,
     val roomCreated: Boolean,
+    val roomCreatedId: String?,
     val createRoomError: Exception?,
     val addingContact: Boolean,
     val addContactError: Exception?

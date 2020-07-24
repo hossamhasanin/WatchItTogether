@@ -9,8 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.hossam.hasanin.watchittogeter.R
-import com.hossam.hasanin.watchittogeter.externals.onEndReachedLinearLayout
-import com.hossam.hasanin.watchittogeter.externals.onEndReachedStaggerdLayout
+import com.hossam.hasanin.base.externals.onEndReachedLinearLayout
 import com.hossam.hasanin.watchittogeter.users.UserWrapper
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers

@@ -1,9 +1,7 @@
 package com.hossam.hasanin.watchroom.groupRoom
 
 import androidx.recyclerview.widget.DiffUtil
-import com.hossam.hasanin.watchittogeter.models.User
-import com.hossam.hasanin.watchittogeter.models.UserState
-import com.hossam.hasanin.watchittogeter.users.UserWrapper
+import com.hossam.hasanin.base.models.UserState
 
 data class UserStateWrapper (
     val userState: UserState?,
@@ -19,7 +17,7 @@ data class UserStateWrapper (
             }
 
             override fun areContentsTheSame(oldItem: UserStateWrapper, newItem: UserStateWrapper): Boolean {
-                return UserState.areContentsTheSame(oldItem.userState ?: UserState() , newItem.userState ?: UserState())
+                return UserState.diffUtil.areContentsTheSame(oldItem.userState ?: UserState() , newItem.userState ?: UserState())
             }
         }
     }

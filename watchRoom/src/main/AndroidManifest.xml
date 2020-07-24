@@ -3,7 +3,7 @@
     package="com.hossam.hasanin.watchroom">
 
     <application>
-        <activity android:name=".WatchRoomActivity"></activity>
+        <activity android:name=".WatchRoomActivity" />
     </application>
 
 </manifest>

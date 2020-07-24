@@ -1,7 +1,7 @@
 package com.hossam.hasanin.watchittogeter.watchRooms
 
 import androidx.recyclerview.widget.DiffUtil
-import com.hossam.hasanin.watchittogeter.models.WatchRoom
+import com.hossam.hasanin.base.models.WatchRoom
 
 data class RoomWrapper(
     val room: WatchRoom?,
@@ -17,7 +17,7 @@ data class RoomWrapper(
             }
 
             override fun areContentsTheSame(oldItem: RoomWrapper, newItem: RoomWrapper): Boolean {
-                return WatchRoom.areContentsTheSame(oldItem.room ?: WatchRoom() , newItem.room ?: WatchRoom())
+                return WatchRoom.diffUtil.areContentsTheSame(oldItem.room ?: WatchRoom(roomId = null) , newItem.room ?: WatchRoom(roomId = null))
             }
         }
     }

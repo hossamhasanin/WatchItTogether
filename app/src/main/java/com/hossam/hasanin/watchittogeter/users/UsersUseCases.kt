@@ -1,7 +1,6 @@
 package com.hossam.hasanin.watchittogeter.users
 
-import com.hossam.hasanin.watchittogeter.models.User
-import com.hossam.hasanin.watchittogeter.models.WatchRoom
+import com.hossam.hasanin.base.models.WatchRoom
 import com.hossam.hasanin.watchittogeter.repositories.MainRepository
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
@@ -57,7 +56,7 @@ class UsersUseCases @Inject constructor(private val repo: MainRepository) {
     }
 
     fun updateUserWatchRoom(data: Map<String , Any>): Observable<UsersViewState>{
-        val room = (data["room"] as WatchRoom )
+        val room = (data["room"] as WatchRoom)
         val viewState = (data["viewState"] as UsersViewState)
         if (viewState.createRoomError != null){
             return Observable.create<UsersViewState>{ viewState.copy(creatingRoom = false , roomCreated = false) }.subscribeOn(Schedulers.io())

@@ -3,9 +3,8 @@ package com.hossam.hasanin.authentication.login
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import com.hossam.hasanin.authentication.AuthUseCase
-import com.hossam.hasanin.watchittogeter.users.UserWrapper
-import com.hossam.hasanin.watchittogeter.users.UsersViewState
 import io.reactivex.Observable
+import io.reactivex.ObservableSource
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.BehaviorSubject
@@ -31,12 +30,15 @@ class LoginViewModel @ViewModelInject constructor(private val useCase: AuthUseCa
 
     private fun bindUi(){
         val dis = _login().doOnNext { postViewStateValue(it) }
-            .observeOn(AndroidSchedulers.mainThread()).subscribe(){}
+            .observeOn(AndroidSchedulers.mainThread()).subscribe({},{
+                it.printStackTrace()
+            })
         compositeDisposable.add(dis)
     }
 
     private fun _login(): Observable<LoginViewState>{
         return _loggingIn.switchMap { useCase.login(viewStateValue()) }
+            .switchMap { useCase.cashCurrentUser(it) as ObservableSource<LoginViewState> }
     }
 
     fun login(email: String , pass: String){

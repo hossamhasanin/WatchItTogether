@@ -1,7 +1,7 @@
 package com.hossam.hasanin.watchittogeter.users
 
 import androidx.recyclerview.widget.DiffUtil
-import com.hossam.hasanin.watchittogeter.models.User
+import com.hossam.hasanin.base.models.User
 
 data class UserWrapper(
     val user: User?,
@@ -17,7 +17,7 @@ data class UserWrapper(
             }
 
             override fun areContentsTheSame(oldItem: UserWrapper, newItem: UserWrapper): Boolean {
-                return User.areContentsTheSame(oldItem.user ?: User() , newItem.user ?: User())
+                return User.areContentsTheSame(oldItem.user ?: User(roomId = null) , newItem.user ?: User(roomId = null))
             }
         }
     }

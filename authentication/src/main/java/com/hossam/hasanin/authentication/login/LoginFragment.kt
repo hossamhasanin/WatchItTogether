@@ -9,16 +9,19 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import com.hossam.hasanin.authentication.R
-import com.hossam.hasanin.watchittogeter.MainActivity
+import com.hossam.hasanin.base.navigationController.NavigationManager
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.login_fragment.*
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
 
     lateinit var disposable: Disposable
     private val viewModel by viewModels<LoginViewModel>()
+    @Inject lateinit var navigationManager: NavigationManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,7 +32,7 @@ class LoginFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        disposable = viewModel.viewState().subscribe {
+        disposable = viewModel.viewState().observeOn(AndroidSchedulers.mainThread()).subscribe {
             if (it.logging){
                 logging.visibility = View.VISIBLE
             } else {
@@ -37,8 +40,7 @@ class LoginFragment : Fragment() {
             }
 
             if (it.logged){
-                activity?.startActivity(Intent(activity , MainActivity::class.java))
-                activity?.finish()
+                navigationManager.navigateTo(NavigationManager.MAIN , Bundle() , requireActivity())
             }
 
             if (it.error != null){

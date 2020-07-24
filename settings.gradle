@@ -1,3 +1,4 @@
+include ':base'
 include ':watchRoom'
 include ':authentication'
 include ':app'

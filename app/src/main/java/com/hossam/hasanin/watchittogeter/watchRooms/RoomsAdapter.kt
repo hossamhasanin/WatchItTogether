@@ -6,8 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.hossam.hasanin.watchittogeter.R
-import com.hossam.hasanin.watchittogeter.models.User
-import com.hossam.hasanin.watchittogeter.models.WatchRoom
+import com.hossam.hasanin.base.models.WatchRoom
 import kotlinx.android.synthetic.main.room_card.view.*
 import javax.inject.Inject
 
@@ -55,8 +54,8 @@ class RoomsAdapter@Inject constructor():
         private val roomCont = view.room_cont
 
         override fun onBind(pos: Int, roomWrapper: RoomWrapper, doAction: (WatchRoom) -> Unit) {
-            name.text = roomWrapper.room.name
-            state.text = when(roomWrapper.room.state){
+            name.text = roomWrapper.room?.name
+            state.text = when(roomWrapper.room?.state){
                 WatchRoom.PAUSE -> {
                     "Pause"
                 }

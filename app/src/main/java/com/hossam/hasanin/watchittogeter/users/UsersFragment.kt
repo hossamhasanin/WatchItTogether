@@ -10,9 +10,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.hossam.hasanin.base.navigationController.NavigationManager
 import com.hossam.hasanin.watchittogeter.R
-import com.hossam.hasanin.watchittogeter.externals.onEndReachedStaggerdLayout
-import com.hossam.hasanin.watchittogeter.models.WatchRoom
+import com.hossam.hasanin.base.externals.onEndReachedStaggerdLayout
+import com.hossam.hasanin.base.models.WatchRoom
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -28,6 +29,7 @@ class UsersFragment : Fragment() {
     private val viewModel by viewModels<UsersViewModel>()
     lateinit var disposable: Disposable
     @Inject lateinit var usersAdapter: UsersAdapter
+    @Inject lateinit var navigationManager: NavigationManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,15 +44,15 @@ class UsersFragment : Fragment() {
 
 
         usersAdapter.doAction = {
-            if (it.currentRoomId!!.isNotEmpty()){
-                Toast.makeText(requireContext() , "This user is inside a room" , Toast.LENGTH_LONG).show()
-            } else {
+            if (it.currentRoomId.isNullOrEmpty()){
                 popUpGetRoomData(it.id!!)
+            } else {
+                Toast.makeText(requireContext() , "This user is inside a room" , Toast.LENGTH_LONG).show()
             }
         }
 
         disposable = viewModel.viewState().observeOn(AndroidSchedulers.mainThread()).subscribe {
-            Log.v("koko" , it.toString())
+            Log.v("lolo" , it.toString())
             if (it.loading){
                 loading.visibility = View.VISIBLE
             } else {
@@ -76,6 +78,10 @@ class UsersFragment : Fragment() {
             if (it.roomCreated){
                 Toast.makeText(requireContext() , "The room created successfully." , Toast.LENGTH_LONG).show()
                 // go to the room
+                val data = Bundle()
+                data.putString("roomId" , it.roomCreatedId)
+                Log.v("lolo" , it.roomCreatedId)
+                navigationManager.navigateTo(NavigationManager.WATCH_ROOM , data , requireActivity())
             }
 
             if (it.createRoomError != null){
@@ -88,11 +94,15 @@ class UsersFragment : Fragment() {
                 viewModel.clearStates()
             }
 
-            if (it.users.isNotEmpty()){
+            if (it.users.isNotEmpty() || viewModel.cashedList.isNotEmpty()){
+                tv_error_mess.visibility = View.GONE
                 if (!viewModel.cashedList.contains(it.users[0]) && !viewModel.cashedList.contains(it.users[it.users.lastIndex])) {
                     viewModel.cashedList.addAll(it.users)
                     usersAdapter.submitList(viewModel.cashedList)
                 }
+            } else {
+                tv_error_mess.visibility = View.VISIBLE
+                tv_error_mess.text = "You can add contacts throw +"
             }
         }
 
@@ -119,7 +129,7 @@ class UsersFragment : Fragment() {
             val roomName = layout.tv_room_name.text.toString()
             val mp4Url = layout.tv_mp4_url.text.toString()
             val watchRoom = WatchRoom(id = System.currentTimeMillis().toString(), name = roomName
-                , mp4Url = mp4Url , users = arrayListOf(viewModel.currentUser.uid , userId))
+                , mp4Url = mp4Url , users = arrayListOf(viewModel.currentUser.uid , userId) , roomId = null)
             viewModel.createRoom(watchRoom)
             ad.dismiss()
         }

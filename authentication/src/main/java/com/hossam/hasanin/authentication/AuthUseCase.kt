@@ -1,9 +1,10 @@
 package com.hossam.hasanin.authentication
 
+import android.util.Log
 import com.hossam.hasanin.authentication.login.LoginViewState
 import com.hossam.hasanin.authentication.signup.SignupViewState
-import com.hossam.hasanin.watchittogeter.models.User
-import com.hossam.hasanin.watchittogeter.repositories.AuthRepository
+import com.hossam.hasanin.base.models.User
+import com.hossam.hasanin.base.repositories.AuthRepository
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import java.lang.Exception
@@ -30,6 +31,13 @@ class AuthUseCase @Inject constructor(private val repo: AuthRepository) {
                 logged = false,
                 logging = false
             )
+        }.toObservable().subscribeOn(Schedulers.io())
+    }
+
+    fun cashCurrentUser(viewState: AuthViewState): Observable<AuthViewState>{
+        Log.v("lolo" , User.current.toString())
+        return repo.cashCurrentUser(User.current!!).materialize<Unit>().map {
+            viewState
         }.toObservable().subscribeOn(Schedulers.io())
     }
 

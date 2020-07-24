@@ -1,25 +1,20 @@
 package com.hossam.hasanin.watchittogeter.users
 
-import android.util.Log
-import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.Query
-import com.hossam.hasanin.watchittogeter.models.User
-import com.hossam.hasanin.watchittogeter.models.WatchRoom
+import com.hossam.hasanin.base.models.WatchRoom
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 
 class UsersViewModel @ViewModelInject constructor(private val usersUseCases: UsersUseCases , private val mAuth: FirebaseAuth) : ViewModel() {
     private val _viewState = BehaviorSubject.create<UsersViewState>().apply {
-        onNext(UsersViewState(users = listOf() , loading = true , loadingMore = false , error = null
-            , refresh = false , creatingRoom = false , roomCreated = false , addingContact = false
+        onNext(UsersViewState(
+            users = listOf() , loading = true , loadingMore = false , error = null
+            , refresh = false , creatingRoom = false , roomCreated = false , roomCreatedId = null , addingContact = false
             , createRoomError = null , addContactError = null))
     }
 
@@ -77,7 +72,7 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
 
     fun createRoom(watchRoom: WatchRoom){
         if (viewStateValue().creatingRoom) return
-        postViewStateValue(viewStateValue().copy(creatingRoom = true))
+        postViewStateValue(viewStateValue().copy(creatingRoom = true , roomCreatedId = watchRoom.id))
         _creatingRoom.onNext(watchRoom)
     }
 
@@ -89,7 +84,7 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
 
     fun clearStates(){
         postViewStateValue(viewStateValue().copy(roomCreated = false , createRoomError = null
-            , creatingRoom = false , addContactError = null , addingContact = false))
+            , creatingRoom = false , addContactError = null , addingContact = false , roomCreatedId = null))
     }
 
 

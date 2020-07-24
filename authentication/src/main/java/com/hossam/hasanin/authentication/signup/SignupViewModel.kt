@@ -3,8 +3,9 @@ package com.hossam.hasanin.authentication.signup
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import com.hossam.hasanin.authentication.AuthUseCase
-import com.hossam.hasanin.watchittogeter.models.User
+import com.hossam.hasanin.base.models.User
 import io.reactivex.Observable
+import io.reactivex.ObservableSource
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.BehaviorSubject
@@ -36,6 +37,7 @@ class SignupViewModel @ViewModelInject constructor(private val useCase: AuthUseC
 
     private fun _signup(): Observable<SignupViewState> {
         return _signingUp.switchMap { useCase.signup(viewStateValue()) }
+            .switchMap { useCase.cashCurrentUser(it) as ObservableSource<SignupViewState> }
     }
 
     fun signup(user: User, pass: String){

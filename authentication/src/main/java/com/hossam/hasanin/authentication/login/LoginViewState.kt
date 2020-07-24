@@ -1,5 +1,6 @@
 package com.hossam.hasanin.authentication.login
 
+import com.hossam.hasanin.authentication.AuthViewState
 import java.lang.Exception
 
 data class LoginViewState(
@@ -8,4 +9,4 @@ data class LoginViewState(
     val error: Exception?,
     val logging: Boolean,
     val logged: Boolean
-)
+): AuthViewState

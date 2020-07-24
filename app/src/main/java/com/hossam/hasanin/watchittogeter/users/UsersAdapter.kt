@@ -7,9 +7,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.hossam.hasanin.watchittogeter.R
-import com.hossam.hasanin.watchittogeter.models.User
+import com.hossam.hasanin.base.models.User
 import kotlinx.android.synthetic.main.user_card.view.*
-import kotlinx.android.synthetic.main.users_fragment.view.*
 import javax.inject.Inject
 
 class UsersAdapter @Inject constructor():

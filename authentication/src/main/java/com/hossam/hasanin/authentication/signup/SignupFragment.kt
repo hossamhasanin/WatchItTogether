@@ -1,7 +1,5 @@
 package com.hossam.hasanin.authentication.signup
 
-import android.content.Intent
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,18 +8,19 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import com.hossam.hasanin.authentication.R
-import com.hossam.hasanin.authentication.login.LoginViewModel
-import com.hossam.hasanin.watchittogeter.MainActivity
-import com.hossam.hasanin.watchittogeter.models.User
+import com.hossam.hasanin.base.navigationController.NavigationManager
+import com.hossam.hasanin.base.models.User
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.signup_fragment.*
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SignupFragment : Fragment() {
 
     lateinit var disposable: Disposable
     private val viewModel by viewModels<SignupViewModel>()
+    @Inject lateinit var navigationManager: NavigationManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,8 +39,7 @@ class SignupFragment : Fragment() {
             }
 
             if (it.logged){
-                activity?.startActivity(Intent(activity , MainActivity::class.java))
-                activity?.finish()
+                navigationManager.navigateTo(NavigationManager.MAIN , Bundle() , requireActivity())
             }
 
             if (it.error != null){
@@ -54,7 +52,7 @@ class SignupFragment : Fragment() {
             val username = tv_username.text.toString()
             val phone = tv_phone.text.toString()
             val pass = tv_pass.text.toString()
-            val user = User(email = email , name = username , phone = phone)
+            val user = User(email = email , name = username , phone = phone , roomId = null)
             viewModel.signup(user, pass)
         }
     }
