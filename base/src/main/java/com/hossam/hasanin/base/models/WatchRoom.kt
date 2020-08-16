@@ -22,6 +22,7 @@ data class WatchRoom (
         const val PLAYING = 1
         const val PAUSE = 2
         const val FINISHED = 3
+        const val CANCELED = 3
 
         val diffUtil = object : DiffUtil.ItemCallback<WatchRoom>() {
 

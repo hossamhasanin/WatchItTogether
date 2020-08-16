@@ -1,6 +1,6 @@
 package com.hossam.hasanin.watchroom.groupRoom
 
-import androidx.lifecycle.ViewModelProviders
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.hossam.hasanin.watchroom.R
+import com.hossam.hasanin.watchroom.UserStateAdapter
 import com.hossam.hasanin.watchroom.WatchRoomActivity
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
@@ -32,12 +33,14 @@ class GroupFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         val roomId = (requireActivity() as WatchRoomActivity ).intent?.extras!!.getString("roomId")
+        val isLeader = (requireActivity() as WatchRoomActivity ).intent?.extras!!.getBoolean("leader")
 
         Log.v("soso" , "fragment here $roomId")
 
-        viewModel.getUsers(roomId!!)
+        viewModel.getUsers(roomId!! , isLeader)
 
         viewModel.setCurrentUserState()
 
@@ -67,6 +70,11 @@ class GroupFragment : Fragment() {
         rec_users.layoutManager = LinearLayoutManager(requireContext())
         rec_users.adapter = userStateAdapter
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.leaveRoom()
     }
 
 }

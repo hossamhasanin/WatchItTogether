@@ -7,10 +7,11 @@ data class UserState (
     val name: String = "",
     val gender: Int? = null,
     val state: Int? = null,
+    val leader: Boolean = false,
     val videoPosition: Long? = null
 ){
 
-    constructor(): this("" , "" , null , null , null)
+    constructor(): this("" , "" , null , null , false , null)
 
     companion object {
         const val ENTERED = 0

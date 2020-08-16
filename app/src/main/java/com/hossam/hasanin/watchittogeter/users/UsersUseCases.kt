@@ -84,4 +84,16 @@ class UsersUseCases @Inject constructor(private val repo: MainRepository) {
         }.toObservable().subscribeOn(Schedulers.io())
     }
 
+    fun getContactData(viewState: UsersViewState , userId: String): Observable<UsersViewState>{
+        return repo.updateUserData(userId).materialize().map {
+            it.value?.let {
+                return@map viewState.copy(updateContactData = it, updateContactDataError = null , updatingContactData = false)
+            }
+            it.error?.let {
+                return@map viewState.copy(updateContactData = null, updateContactDataError = it as Exception , updatingContactData = false)
+            }
+            return@map viewState.copy(updateContactData = null, updateContactDataError = null , updatingContactData = false)
+        }.toObservable().subscribeOn(Schedulers.io())
+    }
+
 }

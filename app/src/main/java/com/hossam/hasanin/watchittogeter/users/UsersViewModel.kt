@@ -15,7 +15,8 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
         onNext(UsersViewState(
             users = listOf() , loading = true , loadingMore = false , error = null
             , refresh = false , creatingRoom = false , roomCreated = false , roomCreatedId = null , addingContact = false
-            , createRoomError = null , addContactError = null))
+            , createRoomError = null , addContactError = null, updateContactData = null,
+            updateContactDataError = null , updatingContactData = false))
     }
 
     val cashedList = mutableListOf<UserWrapper>()
@@ -30,6 +31,7 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
     private val _loadingUsers = PublishSubject.create<Unit>()
     private val _creatingRoom = PublishSubject.create<WatchRoom>()
     private val _addingContact = PublishSubject.create<String>()
+    private val _updatingContact = PublishSubject.create<String>()
 
     init {
         bindUi()
@@ -38,7 +40,7 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
     }
 
     private fun bindUi(){
-        val disposable = Observable.merge(loadUsers() , createRoom() , addContact()).doOnNext {
+        val disposable = Observable.merge(loadUsers() , createRoom() , addContact() , updateContact()).doOnNext {
             postViewStateValue(it)
         }.observeOn(AndroidSchedulers.mainThread()).subscribe({}, {
             it.printStackTrace()
@@ -58,6 +60,10 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
 
     private fun addContact(): Observable<UsersViewState>{
         return _addingContact.switchMap { usersUseCases.addContact(viewStateValue() , it) }
+    }
+
+    private fun updateContact(): Observable<UsersViewState>{
+        return _updatingContact.switchMap { usersUseCases.getContactData(viewStateValue() , it) }
     }
 
     fun loadMore(){
@@ -82,9 +88,16 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
         _addingContact.onNext(query)
     }
 
+    fun updateContact(userId: String){
+        if (viewStateValue().updatingContactData) return
+        postViewStateValue(viewStateValue().copy(updatingContactData = true))
+        _updatingContact.onNext(userId)
+    }
+
     fun clearStates(){
         postViewStateValue(viewStateValue().copy(roomCreated = false , createRoomError = null
-            , creatingRoom = false , addContactError = null , addingContact = false , roomCreatedId = null))
+            , creatingRoom = false , addContactError = null , addingContact = false , roomCreatedId = null
+            ,updatingContactData = false , updateContactDataError = null , updateContactData = null))
     }
 
 

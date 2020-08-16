@@ -31,6 +31,8 @@ class UsersFragment : Fragment() {
     @Inject lateinit var usersAdapter: UsersAdapter
     @Inject lateinit var navigationManager: NavigationManager
 
+    var loadingDialog: AlertDialog? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -45,7 +47,7 @@ class UsersFragment : Fragment() {
 
         usersAdapter.doAction = {
             if (it.currentRoomId.isNullOrEmpty()){
-                popUpGetRoomData(it.id!!)
+                viewModel.updateContact(it.id!!)
             } else {
                 Toast.makeText(requireContext() , "This user is inside a room" , Toast.LENGTH_LONG).show()
             }
@@ -80,6 +82,7 @@ class UsersFragment : Fragment() {
                 // go to the room
                 val data = Bundle()
                 data.putString("roomId" , it.roomCreatedId)
+                data.putBoolean("leader" , true)
                 Log.v("lolo" , it.roomCreatedId)
                 navigationManager.navigateTo(NavigationManager.WATCH_ROOM , data , requireActivity())
             }
@@ -92,6 +95,18 @@ class UsersFragment : Fragment() {
             if (it.addContactError != null){
                 Toast.makeText(requireContext() , it.addContactError.localizedMessage , Toast.LENGTH_LONG).show()
                 viewModel.clearStates()
+            }
+
+            if (it.updatingContactData) {
+                // open loading bar
+                popupProgressBar()
+            }
+
+            if (it.updateContactData != null){
+                if (loadingDialog!!.isShowing){
+                    loadingDialog!!.dismiss()
+                }
+                popUpGetRoomData(it.updateContactData!!.id!!)
             }
 
             if (it.users.isNotEmpty() || viewModel.cashedList.isNotEmpty()){
@@ -135,6 +150,14 @@ class UsersFragment : Fragment() {
         }
 
         ad.show()
+    }
+
+    private fun popupProgressBar(){
+        val d = AlertDialog.Builder(requireContext())
+        val layout = LayoutInflater.from(requireContext()).inflate(R.layout.loading , null)
+        d.setView(layout)
+        d.setCancelable(false)
+        loadingDialog = d.create()
     }
 
     private fun popUpAddNewContact(){

@@ -13,10 +13,14 @@ interface DataSource {
 
     fun getUsers(lastId: String): Maybe<List<User>>
     fun addContact(query: String): Maybe<User>
+    fun updateUserData(userId: String): Maybe<User>
 
     fun getWatchRoomsHistory(lastId: String): Maybe<List<WatchRoom>>
     fun updateUserWatchRoom(userId: String , roomId: String): Completable
     fun roomUsersListener(roomId: String): Observable<List<DocumentSnapshot>>
     fun createRoom(watchRoom: WatchRoom): Completable
     fun addCurrentUserState(roomId: String , userState: UserState): Completable
+    fun getUserOut(roomId: String , users: ArrayList<String>): Completable
+
+    fun setUserState(roomId: String , userState: UserState): Completable
 }

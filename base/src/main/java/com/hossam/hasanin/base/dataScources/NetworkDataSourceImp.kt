@@ -1,11 +1,9 @@
 package com.hossam.hasanin.base.dataScources
 
 import android.util.Log
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.*
 import com.hossam.hasanin.base.externals.ROOMS_COLLECTION
 import com.hossam.hasanin.base.externals.ROOMS_PER_PAGE
 import com.hossam.hasanin.base.externals.USERS_COLLECTION
@@ -15,6 +13,7 @@ import com.hossam.hasanin.base.models.UserState
 import com.hossam.hasanin.base.models.WatchRoom
 import durdinapps.rxfirebase2.RxFirestore
 import io.reactivex.Completable
+import io.reactivex.CompletableEmitter
 import io.reactivex.Maybe
 import io.reactivex.Observable
 import javax.inject.Inject
@@ -43,6 +42,38 @@ class NetworkDataSourceImp @Inject constructor(private val firestore: FirebaseFi
             roomsCollection.document(roomId).collection(USERS_COLLECTION).document(User.current?.id!!).set(userState)
                 .addOnSuccessListener { emmiter.onComplete() }.addOnFailureListener { emmiter.onError(it) }
         }
+    }
+
+    override fun getUserOut(roomId: String , users: ArrayList<String>): Completable {
+        return Completable.create {emitter ->
+            users.remove(User.current!!.id)
+            updateRoomUsersList(roomId , users).addOnSuccessListener {
+                if (users.size > 0){
+                    removeUserState(roomId , emitter)
+                } else {
+                    roomsCollection.document(roomId).update("state" , WatchRoom.CANCELED)
+                        .addOnSuccessListener { emitter.onComplete() }.addOnFailureListener { emitter.onError(it) }
+                }
+            }.addOnFailureListener { emitter.onError(it) }
+        }
+    }
+
+    override fun setUserState(roomId: String, userState: UserState): Completable {
+        val ref = roomsCollection.document(roomId).collection(USERS_COLLECTION).document(mAuth.currentUser!!.uid)
+        return RxFirestore.setDocument(ref , userState)
+    }
+
+    private fun updateRoomUsersList(roomId: String , list: ArrayList<String>): Task<Void> {
+        return roomsCollection.document(roomId).update("users" , list)
+    }
+
+    private fun removeUserState(roomId: String , emitter: CompletableEmitter){
+        usersStateCollection(roomId).document(User.current!!.id!!).delete().addOnSuccessListener { emitter.onComplete() }
+            .addOnFailureListener { emitter.onError(it) }
+    }
+
+    private fun usersStateCollection(roomId: String): CollectionReference {
+        return roomsCollection.document(roomId).collection(USERS_COLLECTION)
     }
 
     override fun updateUserWatchRoom(userId: String , roomId: String): Completable {
@@ -80,6 +111,11 @@ class NetworkDataSourceImp @Inject constructor(private val firestore: FirebaseFi
                 }
             }.addOnFailureListener { emitter.onError(it) }
         }
+    }
+
+    override fun updateUserData(userId: String): Maybe<User> {
+        val ref = userCollection.document(userId)
+        return RxFirestore.getDocument(ref , User::class.java)
     }
 
     override fun getWatchRoomsHistory(lastId: String): Maybe<List<WatchRoom>> {

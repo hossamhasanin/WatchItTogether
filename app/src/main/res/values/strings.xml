@@ -19,4 +19,6 @@
     <string name="hello_slideshow_second">Hello SlideshowSecondFragment. Arg: %1$s</string>
     <string name="settings">Settings</string>
     <string name="about_the_app">About the app</string>
+    <string name="notifications_admin_channel_name">notifi_room</string>
+    <string name="notifications_admin_channel_description">notifi_room_desc</string>
 </resources>

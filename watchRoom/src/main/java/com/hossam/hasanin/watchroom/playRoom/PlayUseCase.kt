@@ -1,4 +1,4 @@
-package com.hossam.hasanin.watchroom.groupRoom
+package com.hossam.hasanin.watchroom.playRoom
 
 import android.util.Log
 import com.hossam.hasanin.base.models.UserState
@@ -8,8 +8,9 @@ import io.reactivex.schedulers.Schedulers
 import java.lang.Exception
 import javax.inject.Inject
 
-class GroupUseCase @Inject constructor(private val repo: MainRepository) {
-    fun usersListener(viewState: GroupViewState , roomId: String): Observable<GroupViewState>{
+class PlayUseCase @Inject constructor(private val repo: MainRepository) {
+
+    fun usersStateListener(viewState: PlayViewState , roomId: String) : Observable<PlayViewState> {
         return repo.roomUsersListener(roomId).materialize().map {
             it.value?.let {
                 val l = it.map { it.toObject(UserState::class.java)!! }
@@ -36,22 +37,9 @@ class GroupUseCase @Inject constructor(private val repo: MainRepository) {
         }.subscribeOn(Schedulers.io())
     }
 
-    fun addCurrentUserState(viewState: GroupViewState , roomId: String , userState: UserState): Observable<GroupViewState>{
-        return repo.addCurrentUserState(roomId, userState).materialize<Unit>().map {
-            return@map viewState
-        }.toObservable().subscribeOn(Schedulers.io())
-    }
-
-    fun leaveTheRoom(viewState: GroupViewState , roomId: String): Observable<GroupViewState>{
-        val ids = viewState.users.map { it.id } as ArrayList
-        return repo.getUserOut(roomId , ids).materialize<Unit>().map {
-            it.value?.let {
-                return@map viewState
-            }
-            it.error?.let {
-                return@map viewState.copy(error = it as Exception)
-            }
-            return@map viewState
+    fun setUserState(userState: UserState , roomId: String): Observable<UserState>{
+        return repo.setUserState(roomId, userState).materialize<Unit>().map {
+            userState
         }.toObservable().subscribeOn(Schedulers.io())
     }
 

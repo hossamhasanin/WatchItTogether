@@ -30,6 +30,10 @@ class MainRepositoryImp @Inject constructor(private val networkDataSourceImp: Da
         return networkDataSourceImp.addContact(query)
     }
 
+    override fun updateUserData(userId: String): Maybe<User> {
+        return networkDataSourceImp.updateUserData(userId)
+    }
+
     override fun getWatchRoomsHistory(lastId: String): Maybe<List<WatchRoom>> {
         return networkDataSourceImp.getWatchRoomsHistory(lastId)
     }
@@ -38,7 +42,15 @@ class MainRepositoryImp @Inject constructor(private val networkDataSourceImp: Da
         return networkDataSourceImp.roomUsersListener(roomId)
     }
 
+    override fun getUserOut(roomId: String , users: ArrayList<String>): Completable {
+        return networkDataSourceImp.getUserOut(roomId, users)
+    }
+
     override fun addCurrentUserState(roomId: String, userState: UserState): Completable {
         return networkDataSourceImp.addCurrentUserState(roomId , userState)
+    }
+
+    override fun setUserState(roomId: String, userState: UserState): Completable {
+        return networkDataSourceImp.setUserState(roomId , userState)
     }
 }

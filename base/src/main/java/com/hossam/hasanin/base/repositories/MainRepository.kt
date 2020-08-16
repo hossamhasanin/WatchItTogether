@@ -14,8 +14,13 @@ interface MainRepository {
     fun createRoomNetwork(watchRoom: WatchRoom): Completable
     fun updateUserWatchRoom(userId: String , roomId: String): Completable
     fun addContacts(query: String): Maybe<User>
+    fun updateUserData(userId: String): Maybe<User>
 
     fun getWatchRoomsHistory(lastId: String): Maybe<List<WatchRoom>>
     fun roomUsersListener(roomId: String): Observable<List<DocumentSnapshot>>
+    fun getUserOut(roomId: String , users: ArrayList<String>): Completable
     fun addCurrentUserState(roomId: String , userState: UserState): Completable
+
+    fun setUserState(roomId: String , userState: UserState): Completable
+
 }

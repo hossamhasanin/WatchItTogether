@@ -1,4 +1,4 @@
-package com.hossam.hasanin.watchroom.groupRoom
+package com.hossam.hasanin.watchroom
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.hossam.hasanin.base.models.UserState
-import com.hossam.hasanin.watchroom.R
 import kotlinx.android.synthetic.main.user_state_card.view.*
 import java.lang.Exception
 import javax.inject.Inject
@@ -17,7 +16,9 @@ class UserStateAdapter @Inject constructor():
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
-        return UserViewHolder(layoutInflater.inflate(R.layout.user_state_card , parent , false))
+        return UserViewHolder(
+            layoutInflater.inflate(R.layout.user_state_card, parent, false)
+        )
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -37,6 +38,8 @@ class UserStateAdapter @Inject constructor():
     class UserViewHolder(view: View) : ViewHolder(view){
         private val name = view.tv_username
         private val img = view.iv_user_image
+        private val leader = view.tv_isleader
+        private val videoPosition = view.tv_video_position
         private val userStateCont = view.tv_user_state
 
         override fun onBind(pos: Int, userState: UserState) {
@@ -67,6 +70,9 @@ class UserStateAdapter @Inject constructor():
                     throw Exception("No such a state")
                 }
             }
+
+            leader.text = if (userState.leader) "Leader" else "Member"
+            videoPosition.text = "Position : ${userState.videoPosition.toString()}"
 
         }
 

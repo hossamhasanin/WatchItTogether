@@ -2,6 +2,10 @@ package com.hossam.hasanin.base.di
 
 import android.content.Context
 import androidx.room.Room
+import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.analytics.PlaybackStatsListener
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.hossam.hasanin.base.MainDataBase
@@ -9,14 +13,16 @@ import com.hossam.hasanin.base.dataScources.*
 import com.hossam.hasanin.base.navigationController.NavigationManager
 import com.hossam.hasanin.base.repositories.AuthRepository
 import com.hossam.hasanin.base.repositories.AuthRepositoryImp
-import com.hossam.hasanin.watchittogeter.repositories.MainRepository
 import com.hossam.hasanin.base.repositories.MainRepositoryImp
+import com.hossam.hasanin.watchittogeter.repositories.MainRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
+
 
 @Module
 @InstallIn(ApplicationComponent::class)
@@ -68,6 +74,14 @@ object AppDependenciesModule {
     @Provides
     fun bindUserCashDataSource(mainDataBase: MainDataBase): UserCashDataSource {
         return mainDataBase.cashDao()
+    }
+
+
+    @Provides
+    fun bindDatasourceFactory(@ActivityContext context: Context): ProgressiveMediaSource.Factory {
+        val dataSourceFactory =
+            DefaultDataSourceFactory(context, "roomPlayer")
+        return ProgressiveMediaSource.Factory(dataSourceFactory)
     }
 
 

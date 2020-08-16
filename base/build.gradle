@@ -57,6 +57,8 @@ dependencies {
     api 'com.google.firebase:firebase-analytics:17.4.3'
     api 'com.google.firebase:firebase-firestore:21.4.3'
     api 'com.google.firebase:firebase-auth:19.3.1'
+    api 'com.google.firebase:firebase-messaging:20.2.4'
+
 
     // Dagger-Hilt
     implementation "com.google.dagger:hilt-android:2.28-alpha"
@@ -73,7 +75,8 @@ dependencies {
     api 'com.github.FrangSierra:RxFirebase:1.5.6'
 
     // exoplayer
-    api 'com.google.android.exoplayer:exoplayer:2.11.7'
+    api 'com.google.android.exoplayer:exoplayer-core:2.11.7'
+    api 'com.google.android.exoplayer:exoplayer-ui:2.11.7'
 
     // room
     def room_version = "2.2.5"

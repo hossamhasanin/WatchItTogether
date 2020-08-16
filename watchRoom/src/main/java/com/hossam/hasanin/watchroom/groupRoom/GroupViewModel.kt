@@ -19,8 +19,8 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
         )
     }
 
-    val currentUserState = UserState(id = User.current?.id!! , gender = User.current?.gender , name = User.current?.name!!
-        , videoPosition = 0 , state = UserState.ENTERED)
+    var currentUserState = UserState(id = User.current?.id!! , gender = User.current?.gender , name = User.current?.name!!
+        , videoPosition = 0 , state = UserState.ENTERED , leader = false)
 
     var cashedRoomId: String? = null
 
@@ -31,13 +31,14 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
 
     private val _gettingUsers = PublishSubject.create<String>()
     private val _settingCurrentUserState = PublishSubject.create<Unit>()
+    private val _leaving = PublishSubject.create<Unit>()
 
     init {
         bindUi()
     }
 
     private fun bindUi(){
-        val dis = _getUsers().doOnNext { postViewStateValue(it) }
+        val dis = Observable.merge(_getUsers() , _leaveRoom()).doOnNext { postViewStateValue(it) }
             .observeOn(AndroidSchedulers.mainThread()).subscribe({} , {
                 it.printStackTrace()
             })
@@ -49,6 +50,10 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
 
     private fun _getUsers(): Observable<GroupViewState> {
         return _gettingUsers.switchMap { useCase.usersListener(viewStateValue() , it) }
+    }
+
+    private fun _leaveRoom(): Observable<GroupViewState> {
+        return _leaving.switchMap { useCase.leaveTheRoom(viewStateValue() , cashedRoomId!!) }
     }
 
     private fun _setCurrentUserState(): Observable<GroupViewState> {
@@ -63,10 +68,15 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
         _settingCurrentUserState.onNext(Unit)
     }
 
-    fun getUsers(roomId: String){
+    fun leaveRoom(){
+        _leaving.onNext(Unit)
+    }
+
+    fun getUsers(roomId: String , isLeader: Boolean){
         if (viewStateValue().users.isNotEmpty()) return
         cashedRoomId = roomId
         Log.v("soso" , "getUsers here $roomId")
+        currentUserState = currentUserState.copy(leader = isLeader)
         _gettingUsers.onNext(roomId)
     }
 
@@ -74,8 +84,8 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
         _viewState.onNext(viewState)
     }
 
-//    override fun onCleared() {
-//        super.onCleared()
-//        compositeDisposable.dispose()
-//    }
+    override fun onCleared() {
+        super.onCleared()
+        compositeDisposable.dispose()
+    }
 }
