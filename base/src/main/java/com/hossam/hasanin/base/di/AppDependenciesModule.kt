@@ -77,12 +77,12 @@ object AppDependenciesModule {
     }
 
 
-    @Provides
-    fun bindDatasourceFactory(@ActivityContext context: Context): ProgressiveMediaSource.Factory {
-        val dataSourceFactory =
-            DefaultDataSourceFactory(context, "roomPlayer")
-        return ProgressiveMediaSource.Factory(dataSourceFactory)
-    }
+//    @Provides
+//    fun bindDatasourceFactory(@ActivityContext context: Context): ProgressiveMediaSource.Factory {
+//        val dataSourceFactory =
+//            DefaultDataSourceFactory(context, "roomPlayer")
+//        return ProgressiveMediaSource.Factory(dataSourceFactory)
+//    }
 
 
 

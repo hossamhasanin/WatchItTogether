@@ -78,6 +78,10 @@ dependencies {
     api 'com.google.android.exoplayer:exoplayer-core:2.11.7'
     api 'com.google.android.exoplayer:exoplayer-ui:2.11.7'
 
+    // letter avatar generator
+    api 'com.first.avatargenerator:AvatarImageGenerator:1.4'
+
+
     // room
     def room_version = "2.2.5"
 

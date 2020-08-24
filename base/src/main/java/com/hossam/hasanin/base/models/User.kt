@@ -3,6 +3,10 @@ package com.hossam.hasanin.base.models
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.ServerTimestamp
+import com.google.firestore.v1.DocumentTransform
 
 @Entity(tableName = "users")
 data class User (
@@ -14,13 +18,16 @@ data class User (
     val phone: String? = "",
     val gender: Int? = null,
     val currentRoomId: String? = "",
-    val addedBy: ArrayList<String> = arrayListOf()
+    val addedBy: ArrayList<String> = arrayListOf(),
+    val lastSeen: Timestamp? = null,
+    val createdAt: Timestamp? = null
 ){
 
-    constructor(): this(null , null , "" , null , null , null , null , arrayListOf<String>())
+    constructor(): this(null , null , "" , null , null , null , null , arrayListOf<String>() , null , null)
 
     companion object : DiffUtil.ItemCallback<User>() {
         override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
+
             return oldItem.id == newItem.id
         }
 

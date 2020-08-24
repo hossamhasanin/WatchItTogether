@@ -1,6 +1,5 @@
 package com.hossam.hasanin.base.repositories
 
-import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentSnapshot
 import com.hossam.hasanin.base.dataScources.DataSource
 import com.hossam.hasanin.base.models.User
@@ -22,8 +21,12 @@ class MainRepositoryImp @Inject constructor(private val networkDataSourceImp: Da
         return networkDataSourceImp.createRoom(watchRoom)
     }
 
-    override fun updateUserWatchRoom(userId: String, roomId: String): Completable {
-        return networkDataSourceImp.updateUserWatchRoom(userId , roomId)
+//    override fun updateUserWatchRoom(userId: String, roomId: String): Completable {
+//        return networkDataSourceImp.updateUserWatchRoom(userId , roomId)
+//    }
+
+    override fun updateCurrentRoomAndLastSeen(roomId: String): Completable {
+        return networkDataSourceImp.updateCurrentRoomAndLastSeen(roomId)
     }
 
     override fun addContacts(query: String): Maybe<User> {
@@ -46,11 +49,11 @@ class MainRepositoryImp @Inject constructor(private val networkDataSourceImp: Da
         return networkDataSourceImp.getUserOut(roomId, users)
     }
 
-    override fun addCurrentUserState(roomId: String, userState: UserState): Completable {
-        return networkDataSourceImp.addCurrentUserState(roomId , userState)
+    override fun addOrUpdateCurrentUserState(roomId: String, userState: UserState , update: Boolean): Completable {
+        return networkDataSourceImp.addOrUpdateCurrentUserState(roomId , userState , update)
     }
 
-    override fun setUserState(roomId: String, userState: UserState): Completable {
-        return networkDataSourceImp.setUserState(roomId , userState)
+    override fun refreshUserState(roomId: String, userState: UserState): Completable {
+        return networkDataSourceImp.refreshUserState(roomId , userState)
     }
 }

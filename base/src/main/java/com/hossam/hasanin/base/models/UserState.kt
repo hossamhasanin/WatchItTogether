@@ -6,7 +6,7 @@ data class UserState (
     val id: String = "",
     val name: String = "",
     val gender: Int? = null,
-    val state: Int? = null,
+    var state: Int? = null,
     val leader: Boolean = false,
     val videoPosition: Long? = null
 ){
@@ -30,5 +30,14 @@ data class UserState (
                 return oldItem.state == newItem.state || oldItem.videoPosition == newItem.videoPosition
             }
         }
+    }
+
+    fun toMap(): MutableMap<String , Any> {
+        return mutableMapOf("id" to id
+            , "name" to name
+            , "gender" to gender as Any
+            , "state" to state as Any
+            , "leader" to leader
+            , "videoPosition" to videoPosition as Any)
     }
 }

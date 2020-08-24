@@ -3,6 +3,7 @@ package com.hossam.hasanin.base.dataScources
 import android.util.Log
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.hossam.hasanin.base.externals.USERS_COLLECTION
 import com.hossam.hasanin.base.models.User
@@ -32,7 +33,16 @@ class AuthenticationDataSourceImp @Inject constructor(private val mAuth: Firebas
             mAuth.createUserWithEmailAndPassword(user.email!! , pass).addOnSuccessListener { auth->
                 val u = user.copy(id = auth.user!!.uid)
                 User.current = u
-                firestore.collection(USERS_COLLECTION).document(auth.user!!.uid).set(u)
+                val data = mapOf("id" to u.id ,
+                    "name" to u.name ,
+                    "email" to u.email ,
+                    "currentRoomId" to u.currentRoomId ,
+                    "addedBy" to u.addedBy ,
+                    "gender" to u.gender ,
+                    "phone" to u.phone ,
+                    "lastSeen" to u.lastSeen ,
+                    "createdAt" to FieldValue.serverTimestamp())
+                firestore.collection(USERS_COLLECTION).document(auth.user!!.uid).set(data)
                     .addOnSuccessListener { emmit.onSuccess(auth) }
                     .addOnFailureListener { emmit.onError(Throwable("Error in saving user data")) }
             }.addOnFailureListener { emmit.onError(Throwable(it.localizedMessage)) }

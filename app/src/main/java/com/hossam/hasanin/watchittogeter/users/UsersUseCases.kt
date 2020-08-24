@@ -45,30 +45,30 @@ class UsersUseCases @Inject constructor(private val repo: MainRepository) {
         }.toObservable().subscribeOn(Schedulers.io())
     }
 
-    fun createRoom(viewState: UsersViewState , watchRoom: WatchRoom): Observable<Map<String , Any>>{
+    fun createRoom(viewState: UsersViewState , watchRoom: WatchRoom): Observable<UsersViewState>{
         return repo.createRoomNetwork(watchRoom).materialize<Unit>().map {
             it.error?.let {
-                val v = viewState.copy(createRoomError = it as Exception)
-                return@map mapOf("viewState" to viewState , "room" to watchRoom)
+                val v = viewState.copy(updateContactData = null , updateContactDataError = null , updatingContactData = false , createRoomError = it as Exception , creatingRoom = false , roomCreated = false)
+                return@map v
             }
-            return@map mapOf("viewState" to viewState , "room" to watchRoom)
+            return@map viewState.copy(updateContactData = null , updateContactDataError = null , updatingContactData = false , creatingRoom = false , roomCreated = true)
         }.toObservable().subscribeOn(Schedulers.io())
     }
 
-    fun updateUserWatchRoom(data: Map<String , Any>): Observable<UsersViewState>{
-        val room = (data["room"] as WatchRoom)
-        val viewState = (data["viewState"] as UsersViewState)
-        if (viewState.createRoomError != null){
-            return Observable.create<UsersViewState>{ viewState.copy(creatingRoom = false , roomCreated = false) }.subscribeOn(Schedulers.io())
-        } else {
-            return repo.updateUserWatchRoom(room.users[1], room.id).materialize<Unit>().map {
-                it.error?.let {
-                    return@map viewState.copy(createRoomError = it as Exception)
-                }
-                return@map viewState.copy(creatingRoom = false , roomCreated = true)
-            }.toObservable().subscribeOn(Schedulers.io())
-        }
-    }
+//    fun updateUserWatchRoom(data: Map<String , Any>): Observable<UsersViewState>{
+//        val room = (data["room"] as WatchRoom)
+//        val viewState = (data["viewState"] as UsersViewState)
+//        if (viewState.createRoomError != null){
+//            return Observable.create<UsersViewState>{ viewState.copy(creatingRoom = false , roomCreated = false) }.subscribeOn(Schedulers.io())
+//        } else {
+//            return repo.updateUserWatchRoom(room.users[1], room.id).materialize<Unit>().map {
+//                it.error?.let {
+//                    return@map viewState.copy(createRoomError = it as Exception)
+//                }
+//                return@map viewState.copy(creatingRoom = false , roomCreated = true)
+//            }.toObservable().subscribeOn(Schedulers.io())
+//        }
+//    }
 
     fun addContact(viewState: UsersViewState , query: String): Observable<UsersViewState>{
         return repo.addContacts(query).materialize().map {

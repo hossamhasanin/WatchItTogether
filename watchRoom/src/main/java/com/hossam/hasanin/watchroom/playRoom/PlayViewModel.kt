@@ -6,18 +6,16 @@ import androidx.lifecycle.ViewModel
 import com.hossam.hasanin.base.models.User
 import com.hossam.hasanin.base.models.UserState
 import com.hossam.hasanin.base.models.WatchRoom
-import com.hossam.hasanin.watchroom.groupRoom.GroupViewState
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 
 class PlayViewModel @ViewModelInject constructor(private val useCase: PlayUseCase): ViewModel() {
     private val _viewState = BehaviorSubject.create<PlayViewState>().apply {
         onNext(
-            PlayViewState(listOf() , true , null , WatchRoom.READY , null , false)
+            PlayViewState(listOf() , true , null , WatchRoom.PREPARING , null , false)
         )
     }
 
@@ -34,7 +32,7 @@ class PlayViewModel @ViewModelInject constructor(private val useCase: PlayUseCas
     private val _gettingUsers = PublishSubject.create<String>()
 
     init {
-        val userStateListener = currentUserState.switchMap { useCase.setUserState(it , cashedRoomId!!) }.subscribe(){}
+        val userStateListener = currentUserState.switchMap { useCase.refreshUserState(it , cashedRoomId!!) }.subscribe(){}
         val dis = _getUsers().doOnNext { postViewStateValue(it) }.observeOn(AndroidSchedulers.mainThread()).subscribe(){}
 
         compositeDisposable.addAll(userStateListener , dis)

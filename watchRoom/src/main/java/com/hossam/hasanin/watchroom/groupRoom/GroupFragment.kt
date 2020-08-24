@@ -8,11 +8,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.hossam.hasanin.base.models.UserState
+import com.hossam.hasanin.base.models.WatchRoom
 import com.hossam.hasanin.watchroom.R
 import com.hossam.hasanin.watchroom.UserStateAdapter
 import com.hossam.hasanin.watchroom.WatchRoomActivity
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.group_fragment.*
 import javax.inject.Inject
@@ -35,16 +39,27 @@ class GroupFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
-        val roomId = (requireActivity() as WatchRoomActivity ).intent?.extras!!.getString("roomId")
+        val room: WatchRoom = (requireActivity() as WatchRoomActivity ).intent?.extras!!.getParcelable("room")!!
         val isLeader = (requireActivity() as WatchRoomActivity ).intent?.extras!!.getBoolean("leader")
 
-        Log.v("soso" , "fragment here $roomId")
+        userStateAdapter.tellIfReady = {isReady ->
+            if (isReady){
+                // show play button but only to the leader
+                btn_play.visibility = View.VISIBLE
+            } else {
+                // hide play button
+                btn_play.visibility = View.GONE
+            }
+        }
 
-        viewModel.getUsers(roomId!! , isLeader)
+        Log.v("soso" , "fragment here $room")
 
-        viewModel.setCurrentUserState()
+        viewModel.getUsers(room.id!! , isLeader)
 
-        disposable = viewModel.viewState().subscribe {
+        viewModel.initCurrentUserState()
+
+        disposable = viewModel.viewState().observeOn(AndroidSchedulers.mainThread()).subscribe {
+            Log.v("dodo" , it.toString())
             if (it.loading){
                 loading.visibility = View.VISIBLE
             } else {
@@ -70,6 +85,19 @@ class GroupFragment : Fragment() {
         rec_users.layoutManager = LinearLayoutManager(requireContext())
         rec_users.adapter = userStateAdapter
 
+        btn_play.setOnClickListener {
+            findNavController().navigate(R.id.playFragment)
+        }
+
+        btn_ready.setOnClickListener {
+            viewModel.currentUserState.state = UserState.READY
+            viewModel.updateUserState()
+        }
+
+    }
+
+    private fun displayRoomData(roomData: WatchRoom){
+        tv_movie_name.text = roomData.name
     }
 
     override fun onDestroy() {

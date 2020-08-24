@@ -16,11 +16,12 @@ interface DataSource {
     fun updateUserData(userId: String): Maybe<User>
 
     fun getWatchRoomsHistory(lastId: String): Maybe<List<WatchRoom>>
-    fun updateUserWatchRoom(userId: String , roomId: String): Completable
+//    fun updateUserWatchRoom(userId: String , roomId: String): Completable
+    fun updateCurrentRoomAndLastSeen(roomId: String): Completable
     fun roomUsersListener(roomId: String): Observable<List<DocumentSnapshot>>
     fun createRoom(watchRoom: WatchRoom): Completable
-    fun addCurrentUserState(roomId: String , userState: UserState): Completable
+    fun addOrUpdateCurrentUserState(roomId: String, userState: UserState , update: Boolean): Completable
     fun getUserOut(roomId: String , users: ArrayList<String>): Completable
 
-    fun setUserState(roomId: String , userState: UserState): Completable
+    fun refreshUserState(roomId: String, userState: UserState): Completable
 }

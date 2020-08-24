@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.hossam.hasanin.base.models.UserState
 import com.hossam.hasanin.watchroom.R
@@ -36,7 +37,7 @@ class PlayFragment : Fragment() {
 
     var player : SimpleExoPlayer? = null
     var roomId: String? = null
-    @Inject lateinit var mediaFactory : ProgressiveMediaSource.Factory
+    lateinit var mediaFactory : ProgressiveMediaSource.Factory
     @Inject lateinit var playbackStateListener: PlaybackStateListener
     @Inject lateinit var userStateAdapter: UserStateAdapter
 
@@ -60,6 +61,9 @@ class PlayFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
+        val dataSourceFactory =
+            DefaultDataSourceFactory(context, "roomPlayer")
+        mediaFactory = ProgressiveMediaSource.Factory(dataSourceFactory)
 
         playbackStateListener.trackState = {
             when(it){

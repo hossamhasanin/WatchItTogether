@@ -14,7 +14,7 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
     private val _viewState = BehaviorSubject.create<UsersViewState>().apply {
         onNext(UsersViewState(
             users = listOf() , loading = true , loadingMore = false , error = null
-            , refresh = false , creatingRoom = false , roomCreated = false , roomCreatedId = null , addingContact = false
+            , refresh = false , creatingRoom = false , roomCreated = false , roomCreatedObject = null , addingContact = false
             , createRoomError = null , addContactError = null, updateContactData = null,
             updateContactDataError = null , updatingContactData = false))
     }
@@ -40,7 +40,7 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
     }
 
     private fun bindUi(){
-        val disposable = Observable.merge(loadUsers() , createRoom() , addContact() , updateContact()).doOnNext {
+        val disposable = Observable.merge(loadUsers() , _createRoom() , addContact() , updateContact()).doOnNext {
             postViewStateValue(it)
         }.observeOn(AndroidSchedulers.mainThread()).subscribe({}, {
             it.printStackTrace()
@@ -53,9 +53,9 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
         return _loadingUsers.switchMap { usersUseCases.getUsers(viewStateValue()) }
     }
 
-    private fun createRoom(): Observable<UsersViewState>{
+    private fun _createRoom(): Observable<UsersViewState>{
         return _creatingRoom.switchMap { usersUseCases.createRoom(viewStateValue() , it) }
-            .switchMap { usersUseCases.updateUserWatchRoom(it) }
+//            .switchMap { usersUseCases.updateUserWatchRoom(it) }
     }
 
     private fun addContact(): Observable<UsersViewState>{
@@ -78,7 +78,7 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
 
     fun createRoom(watchRoom: WatchRoom){
         if (viewStateValue().creatingRoom) return
-        postViewStateValue(viewStateValue().copy(creatingRoom = true , roomCreatedId = watchRoom.id))
+        postViewStateValue(viewStateValue().copy(creatingRoom = true , roomCreatedObject = watchRoom))
         _creatingRoom.onNext(watchRoom)
     }
 
@@ -96,7 +96,7 @@ class UsersViewModel @ViewModelInject constructor(private val usersUseCases: Use
 
     fun clearStates(){
         postViewStateValue(viewStateValue().copy(roomCreated = false , createRoomError = null
-            , creatingRoom = false , addContactError = null , addingContact = false , roomCreatedId = null
+            , creatingRoom = false , addContactError = null , addingContact = false , roomCreatedObject = null
             ,updatingContactData = false , updateContactDataError = null , updateContactData = null))
     }
 

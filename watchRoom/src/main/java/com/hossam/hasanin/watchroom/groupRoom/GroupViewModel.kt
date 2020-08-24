@@ -15,7 +15,7 @@ import io.reactivex.subjects.PublishSubject
 class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseCase) : ViewModel() {
     private val _viewState = BehaviorSubject.create<GroupViewState>().apply {
         onNext(
-            GroupViewState(listOf() , true , null , WatchRoom.READY)
+            GroupViewState(listOf() , true , null , WatchRoom.PREPARING)
         )
     }
 
@@ -30,26 +30,33 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
     fun viewStateValue(): GroupViewState = _viewState.value!!
 
     private val _gettingUsers = PublishSubject.create<String>()
-    private val _settingCurrentUserState = PublishSubject.create<Unit>()
+    private val _updatingLastSeenData = PublishSubject.create<String>()
+    private val _settingCurrentUserState = PublishSubject.create<Boolean>()
     private val _leaving = PublishSubject.create<Unit>()
+
 
     init {
         bindUi()
     }
 
     private fun bindUi(){
-        val dis = Observable.merge(_getUsers() , _leaveRoom()).doOnNext { postViewStateValue(it) }
+        val dis = Observable.merge(_getUsers() , _leaveRoom() , _updateLastSeenData() , _setCurrentUserState()).doOnNext { postViewStateValue(it) }
             .observeOn(AndroidSchedulers.mainThread()).subscribe({} , {
                 it.printStackTrace()
             })
-        val dis2 = _setCurrentUserState().observeOn(AndroidSchedulers.mainThread()).subscribe({} , {
-            it.printStackTrace()
-        })
+        val dis2 = _setCurrentUserState().doOnNext { postViewStateValue(it) }
+            .observeOn(AndroidSchedulers.mainThread()).subscribe({} , {
+                it.printStackTrace()
+            })
         compositeDisposable.addAll(dis , dis2)
     }
 
     private fun _getUsers(): Observable<GroupViewState> {
         return _gettingUsers.switchMap { useCase.usersListener(viewStateValue() , it) }
+    }
+
+    private fun _updateLastSeenData(): Observable<GroupViewState> {
+        return _updatingLastSeenData.switchMap { useCase.updateLastSeenData(viewStateValue() , it) }
     }
 
     private fun _leaveRoom(): Observable<GroupViewState> {
@@ -59,13 +66,17 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
     private fun _setCurrentUserState(): Observable<GroupViewState> {
         return _settingCurrentUserState.switchMap {
             Log.v("soso" , "_setCurrentUserState here $cashedRoomId")
-            useCase.addCurrentUserState(viewStateValue() , cashedRoomId!! , currentUserState) }
+            useCase.addCurrentUserState(viewStateValue() , cashedRoomId!! , currentUserState , it) }
     }
 
-    fun setCurrentUserState() {
+    fun initCurrentUserState() {
         val ids = viewStateValue().users.map { it.id }
         if (ids.contains(User.current?.id)) return
-        _settingCurrentUserState.onNext(Unit)
+        _settingCurrentUserState.onNext(false)
+    }
+
+    fun updateUserState(){
+        _settingCurrentUserState.onNext(true)
     }
 
     fun leaveRoom(){
@@ -78,6 +89,7 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
         Log.v("soso" , "getUsers here $roomId")
         currentUserState = currentUserState.copy(leader = isLeader)
         _gettingUsers.onNext(roomId)
+        _updatingLastSeenData.onNext(roomId)
     }
 
     private fun postViewStateValue(viewState: GroupViewState){

@@ -1,6 +1,5 @@
 package com.hossam.hasanin.authentication.login
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.hossam.hasanin.authentication.R
 import com.hossam.hasanin.base.navigationController.NavigationManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,6 +52,10 @@ class LoginFragment : Fragment() {
             val email = tv_email.text.toString()
             val pass = tv_pass.text.toString()
             viewModel.login(email, pass)
+        }
+
+        tv_go_to_signup.setOnClickListener {
+            findNavController().navigate(R.id.signupFragment)
         }
 
     }

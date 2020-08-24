@@ -7,10 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.hossam.hasanin.authentication.R
 import com.hossam.hasanin.base.navigationController.NavigationManager
 import com.hossam.hasanin.base.models.User
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.signup_fragment.*
 import javax.inject.Inject
@@ -31,7 +33,7 @@ class SignupFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        disposable = viewModel.viewState().subscribe {
+        disposable = viewModel.viewState().observeOn(AndroidSchedulers.mainThread()).subscribe {
             if (it.logging){
                 logging.visibility = View.VISIBLE
             } else {
@@ -55,6 +57,11 @@ class SignupFragment : Fragment() {
             val user = User(email = email , name = username , phone = phone , roomId = null)
             viewModel.signup(user, pass)
         }
+
+        tv_go_to_login.setOnClickListener {
+            findNavController().navigateUp()
+        }
+
     }
 
 }

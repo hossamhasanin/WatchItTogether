@@ -36,9 +36,9 @@ class GroupUseCase @Inject constructor(private val repo: MainRepository) {
         }.subscribeOn(Schedulers.io())
     }
 
-    fun addCurrentUserState(viewState: GroupViewState , roomId: String , userState: UserState): Observable<GroupViewState>{
-        return repo.addCurrentUserState(roomId, userState).materialize<Unit>().map {
-            return@map viewState
+    fun addCurrentUserState(viewState: GroupViewState , roomId: String , userState: UserState , update: Boolean): Observable<GroupViewState>{
+        return repo.addOrUpdateCurrentUserState(roomId, userState , update).materialize<Unit>().map {
+            return@map viewState.copy(loading = false , error = null)
         }.toObservable().subscribeOn(Schedulers.io())
     }
 
@@ -51,6 +51,12 @@ class GroupUseCase @Inject constructor(private val repo: MainRepository) {
             it.error?.let {
                 return@map viewState.copy(error = it as Exception)
             }
+            return@map viewState
+        }.toObservable().subscribeOn(Schedulers.io())
+    }
+
+    fun updateLastSeenData(viewState: GroupViewState , roomId: String) : Observable<GroupViewState>{
+        return repo.updateCurrentRoomAndLastSeen(roomId).materialize<Unit>().map {
             return@map viewState
         }.toObservable().subscribeOn(Schedulers.io())
     }

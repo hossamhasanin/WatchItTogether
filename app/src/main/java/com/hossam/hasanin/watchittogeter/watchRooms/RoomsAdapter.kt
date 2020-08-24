@@ -59,10 +59,10 @@ class RoomsAdapter@Inject constructor():
                 WatchRoom.PAUSE -> {
                     "Pause"
                 }
-                WatchRoom.PLAYING -> {
+                WatchRoom.RUNNING -> {
                     "Playing"
                 }
-                WatchRoom.READY -> {
+                WatchRoom.PREPARING -> {
                     "Ready"
                 }
                 WatchRoom.FINISHED -> {

@@ -4,6 +4,8 @@ import android.app.Application
 import android.content.Intent
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.FirebaseMessaging
 import com.hossam.hasanin.authentication.AuthenticationActivity
 import com.hossam.hasanin.base.navigationController.NavigationManager
 import com.hossam.hasanin.base.models.User
@@ -16,6 +18,7 @@ import javax.inject.Inject
 @HiltAndroidApp
 class BaseApplication : Application() {
     @Inject lateinit var navigationManager: NavigationManager
+    @Inject lateinit var mAuth: FirebaseAuth
     val compositeDisposable = CompositeDisposable()
     override fun onCreate() {
         super.onCreate()
@@ -27,6 +30,7 @@ class BaseApplication : Application() {
             .build()
 
         FirebaseApp.initializeApp(applicationContext , options , "watchittogether-2b467")
+        FirebaseMessaging.getInstance().subscribeToTopic("userState")
 
         User.current = null
         val disposable = navigationManager.navigationStream().observeOn(AndroidSchedulers.mainThread()).subscribe { navModel ->

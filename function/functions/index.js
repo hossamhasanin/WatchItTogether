@@ -75,10 +75,9 @@ async function sendInvitation(snap) {
             icon: "default"
         },
         data: {
+            noti_type: "invite",
             sendedBy_Id: sendedBy.data().id,
             sendedBy_name: sendedByName,
-            room_desc: snap.data().desc,
-            room_name: snap.data().name,
             room_id: snap.data().id,
             room_video_url: snap.data().mp4Url
         }

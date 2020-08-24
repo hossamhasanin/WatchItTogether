@@ -14,6 +14,8 @@ import javax.inject.Inject
 class UserStateAdapter @Inject constructor():
     ListAdapter<UserState, UserStateAdapter.ViewHolder>(UserState.diffUtil) {
 
+    var tellIfReady: (Boolean) -> Unit = {}
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return UserViewHolder(
@@ -22,11 +24,11 @@ class UserStateAdapter @Inject constructor():
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.onBind(position , getItem(position))
+        holder.onBind(position , getItem(position) , itemCount ,  tellIfReady)
     }
 
     abstract class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
-        abstract fun onBind(pos: Int, userState: UserState)
+        abstract fun onBind(pos: Int, userState: UserState , itemCount: Int , tellIfReady: (Boolean) -> Unit )
     }
 
 //    class LoadingViewHolder(view: View): ViewHolder(view){
@@ -42,7 +44,9 @@ class UserStateAdapter @Inject constructor():
         private val videoPosition = view.tv_video_position
         private val userStateCont = view.tv_user_state
 
-        override fun onBind(pos: Int, userState: UserState) {
+        var isReady = true
+
+        override fun onBind(pos: Int, userState: UserState , itemCount: Int , tellIfReady: (Boolean) -> Unit) {
             name.text = userState.name
             if (userState.gender == 0){
                 Glide.with(img.context).load(R.drawable.female).into(img)
@@ -73,6 +77,14 @@ class UserStateAdapter @Inject constructor():
 
             leader.text = if (userState.leader) "Leader" else "Member"
             videoPosition.text = "Position : ${userState.videoPosition.toString()}"
+
+            if (isReady){
+                isReady = userState.state != UserState.PAUSE
+            }
+
+            if (pos == itemCount-1){
+                tellIfReady(isReady)
+            }
 
         }
 

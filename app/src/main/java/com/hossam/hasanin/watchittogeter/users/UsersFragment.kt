@@ -9,10 +9,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.hossam.hasanin.base.externals.onEndReachedLinearLayout
 import com.hossam.hasanin.base.navigationController.NavigationManager
 import com.hossam.hasanin.watchittogeter.R
-import com.hossam.hasanin.base.externals.onEndReachedStaggerdLayout
 import com.hossam.hasanin.base.models.WatchRoom
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -46,11 +46,7 @@ class UsersFragment : Fragment() {
 
 
         usersAdapter.doAction = {
-            if (it.currentRoomId.isNullOrEmpty()){
-                viewModel.updateContact(it.id!!)
-            } else {
-                Toast.makeText(requireContext() , "This user is inside a room" , Toast.LENGTH_LONG).show()
-            }
+            viewModel.updateContact(it.id!!)
         }
 
         disposable = viewModel.viewState().observeOn(AndroidSchedulers.mainThread()).subscribe {
@@ -81,9 +77,9 @@ class UsersFragment : Fragment() {
                 Toast.makeText(requireContext() , "The room created successfully." , Toast.LENGTH_LONG).show()
                 // go to the room
                 val data = Bundle()
-                data.putString("roomId" , it.roomCreatedId)
+                data.putParcelable("room" , it.roomCreatedObject)
                 data.putBoolean("leader" , true)
-                Log.v("lolo" , it.roomCreatedId)
+                Log.v("lolo" , it.roomCreatedObject.toString())
                 navigationManager.navigateTo(NavigationManager.WATCH_ROOM , data , requireActivity())
             }
 
@@ -94,7 +90,7 @@ class UsersFragment : Fragment() {
 
             if (it.addContactError != null){
                 Toast.makeText(requireContext() , it.addContactError.localizedMessage , Toast.LENGTH_LONG).show()
-                viewModel.clearStates()
+               // viewModel.clearStates()
             }
 
             if (it.updatingContactData) {
@@ -102,11 +98,16 @@ class UsersFragment : Fragment() {
                 popupProgressBar()
             }
 
-            if (it.updateContactData != null){
+            if (it.updateContactData != null && !it.creatingRoom){
                 if (loadingDialog!!.isShowing){
                     loadingDialog!!.dismiss()
                 }
-                popUpGetRoomData(it.updateContactData!!.id!!)
+                if (it.updateContactData.currentRoomId == ""){
+                    popUpGetRoomData(it.updateContactData!!.id!!)
+                } else {
+                    Toast.makeText(requireContext() , "${it.updateContactData.name} is in a room" , Toast.LENGTH_LONG).show()
+                    viewModel.clearStates()
+                }
             }
 
             if (it.users.isNotEmpty() || viewModel.cashedList.isNotEmpty()){
@@ -117,14 +118,14 @@ class UsersFragment : Fragment() {
                 }
             } else {
                 tv_error_mess.visibility = View.VISIBLE
-                tv_error_mess.text = "You can add contacts throw +"
+                tv_error_mess.text = "You don't have any contacts yet ."
             }
         }
 
-        user_rec.layoutManager = StaggeredGridLayoutManager(4 , StaggeredGridLayoutManager.VERTICAL)
+        user_rec.layoutManager = LinearLayoutManager(requireContext())
         user_rec.adapter = usersAdapter
 
-        user_rec.onEndReachedStaggerdLayout {
+        user_rec.onEndReachedLinearLayout {
             viewModel.loadMore()
         }
 
@@ -143,7 +144,8 @@ class UsersFragment : Fragment() {
         layout.btn_create.setOnClickListener {
             val roomName = layout.tv_room_name.text.toString()
             val mp4Url = layout.tv_mp4_url.text.toString()
-            val watchRoom = WatchRoom(id = System.currentTimeMillis().toString(), name = roomName
+            val desc = layout.tv_room_desc.text.toString()
+            val watchRoom = WatchRoom(id = System.currentTimeMillis().toString(), name = roomName , desc = desc
                 , mp4Url = mp4Url , users = arrayListOf(viewModel.currentUser.uid , userId) , roomId = null)
             viewModel.createRoom(watchRoom)
             ad.dismiss()
@@ -158,6 +160,7 @@ class UsersFragment : Fragment() {
         d.setView(layout)
         d.setCancelable(false)
         loadingDialog = d.create()
+        loadingDialog!!.show()
     }
 
     private fun popUpAddNewContact(){

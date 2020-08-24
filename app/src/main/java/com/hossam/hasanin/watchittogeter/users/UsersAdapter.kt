@@ -5,10 +5,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.avatarfirst.avatargenlib.AvatarConstants
+import com.avatarfirst.avatargenlib.AvatarGenerator
 import com.bumptech.glide.Glide
 import com.hossam.hasanin.watchittogeter.R
 import com.hossam.hasanin.base.models.User
 import kotlinx.android.synthetic.main.user_card.view.*
+import java.text.DateFormat
 import javax.inject.Inject
 
 class UsersAdapter @Inject constructor():
@@ -53,14 +56,15 @@ class UsersAdapter @Inject constructor():
         private val name = view.name
         private val img = view.iv_user_image
         private val userCont = view.cont_user
+        private val tvLastSeen = view.tv_last_seen
 
         override fun onBind(pos: Int, userWrapper: UserWrapper , doAction: (User) -> Unit) {
             name.text = userWrapper.user!!.name
-            if (userWrapper.user.gender == 0){
-                Glide.with(img.context).load(R.drawable.female).into(img)
-            } else {
-                Glide.with(img.context).load(R.drawable.male).into(img)
-            }
+            Glide.with(img.context)
+                .load(AvatarGenerator.avatarImage(img.context, 100, AvatarConstants.CIRCLE, userWrapper.user!!.name))
+                .into(img)
+            val dateFormat = DateFormat.getInstance().format(userWrapper.user.createdAt!!.toDate())
+            tvLastSeen.text = "Last seen $dateFormat"
             userCont.setOnClickListener {
                 doAction(userWrapper.user)
             }

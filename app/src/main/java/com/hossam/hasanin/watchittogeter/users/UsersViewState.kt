@@ -1,6 +1,7 @@
 package com.hossam.hasanin.watchittogeter.users
 
 import com.hossam.hasanin.base.models.User
+import com.hossam.hasanin.base.models.WatchRoom
 import java.lang.Exception
 
 data class UsersViewState(
@@ -11,7 +12,7 @@ data class UsersViewState(
     val refresh: Boolean,
     val creatingRoom: Boolean,
     val roomCreated: Boolean,
-    val roomCreatedId: String?,
+    val roomCreatedObject: WatchRoom?,
     val createRoomError: Exception?,
     val addingContact: Boolean,
     val addContactError: Exception?,

@@ -27,6 +27,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.FirebaseMessaging
 import com.hossam.hasanin.watchittogeter.users.UsersUseCases
 import com.hossam.hasanin.watchittogeter.users.UsersViewModel
 import com.hossam.hasanin.watchittogeter.watchRooms.WatchRoomsViewModel
@@ -46,13 +48,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     //private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var toggle: ActionBarDrawerToggle
-
+    @Inject lateinit var mAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
+
+        FirebaseMessaging.getInstance().subscribeToTopic(mAuth.currentUser!!.uid)
+
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
 

@@ -22,6 +22,7 @@ import com.hossam.hasanin.base.externals.NOTIFICATION_CHANALE_ID
 import javax.inject.Inject
 import androidx.core.app.NotificationCompat.Builder
 import androidx.core.app.NotificationManagerCompat
+import com.hossam.hasanin.base.models.User
 import com.hossam.hasanin.watchroom.WatchRoomActivity
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
@@ -74,8 +75,16 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 .setContentIntent(resultPendingIntent)
                 .setSound(defaultSoundUri)
 
-        with(NotificationManagerCompat.from(this)) {
-            notify(notificationId, notificationBuilder.build())
+        if (remoteMessage.data["noti_type"] == "userState") {
+            if (remoteMessage.data["user_id"] != User.current!!.id){
+                with(NotificationManagerCompat.from(this)) {
+                    notify(notificationId, notificationBuilder.build())
+                }
+            }
+        } else {
+            with(NotificationManagerCompat.from(this)) {
+                notify(notificationId, notificationBuilder.build())
+            }
         }
         Log.v("Notification" , "noti")
 

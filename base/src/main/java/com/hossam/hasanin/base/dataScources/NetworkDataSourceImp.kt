@@ -34,13 +34,35 @@ class NetworkDataSourceImp @Inject constructor(private val firestore: FirebaseFi
 
     override fun createRoom(watchRoom: WatchRoom): Completable {
         val ref = roomsCollection.document(watchRoom.id)
-        return RxFirestore.setDocument(ref , watchRoom)
+        val data = mapOf("id" to watchRoom.id ,
+            "name" to watchRoom.name ,
+            "desc" to watchRoom.desc ,
+            "mp4Url" to watchRoom.mp4Url ,
+            "state" to watchRoom.state , "users" to watchRoom.users , "createdAt" to FieldValue.serverTimestamp())
+        return Completable.create{ emitter ->
+            ref.set(data).addOnSuccessListener { emitter.onComplete() }.addOnFailureListener { emitter.onError(it) }
+        }
     }
 
-    override fun addCurrentUserState(roomId: String , userState: UserState): Completable {
+    override fun addOrUpdateCurrentUserState(roomId: String, userState: UserState , update: Boolean): Completable {
         return Completable.create {emmiter ->
-            roomsCollection.document(roomId).collection(USERS_COLLECTION).document(User.current?.id!!).set(userState)
-                .addOnSuccessListener { emmiter.onComplete() }.addOnFailureListener { emmiter.onError(it) }
+            Log.v("soso" , "hello from com user id = ${User.current!!.id}")
+            val ref  = roomsCollection.document(roomId).collection(USERS_COLLECTION).document(mAuth.currentUser!!.uid)
+            if (update){
+                ref.update("state" , userState.state)
+                    .addOnSuccessListener {
+                        Log.v("soso" , "hello from thr update")
+                        emmiter.onComplete() }.addOnFailureListener {
+                        it.printStackTrace()
+                        emmiter.onError(it) }
+            } else {
+                ref.set(userState)
+                    .addOnSuccessListener {
+                        Log.v("soso" , "hello from set")
+                        emmiter.onComplete() }.addOnFailureListener {
+                        it.printStackTrace()
+                        emmiter.onError(it) }
+            }
         }
     }
 
@@ -58,9 +80,9 @@ class NetworkDataSourceImp @Inject constructor(private val firestore: FirebaseFi
         }
     }
 
-    override fun setUserState(roomId: String, userState: UserState): Completable {
+    override fun refreshUserState(roomId: String, userState: UserState): Completable {
         val ref = roomsCollection.document(roomId).collection(USERS_COLLECTION).document(mAuth.currentUser!!.uid)
-        return RxFirestore.setDocument(ref , userState)
+        return RxFirestore.updateDocument(ref , userState.toMap())
     }
 
     private fun updateRoomUsersList(roomId: String , list: ArrayList<String>): Task<Void> {
@@ -76,15 +98,21 @@ class NetworkDataSourceImp @Inject constructor(private val firestore: FirebaseFi
         return roomsCollection.document(roomId).collection(USERS_COLLECTION)
     }
 
-    override fun updateUserWatchRoom(userId: String , roomId: String): Completable {
-        val user = userCollection.document(userId)
-        val me = userCollection.document(mAuth.currentUser!!.uid)
-        return Completable.create { emitter ->
-            user.update("currentRoomId" , roomId).addOnSuccessListener {
-                me.update("currentRoomId" , roomId).addOnSuccessListener { emitter.onComplete() }
-                    .addOnFailureListener { emitter.onError(Exception("Something go wrong")) }
-            }.addOnFailureListener { emitter.onError(Exception("Something go wrong")) }
-        }
+//    override fun updateUserWatchRoom(userId: String , roomId: String): Completable {
+//        val user = userCollection.document(userId)
+//        val me = userCollection.document(mAuth.currentUser!!.uid)
+//        return Completable.create { emitter ->
+//            user.update("currentRoomId" , roomId).addOnSuccessListener {
+//                me.update("currentRoomId" , roomId).addOnSuccessListener { emitter.onComplete() }
+//                    .addOnFailureListener { emitter.onError(Exception("Something go wrong")) }
+//            }.addOnFailureListener { emitter.onError(Exception("Something go wrong")) }
+//        }
+//    }
+
+    override fun updateCurrentRoomAndLastSeen(roomId: String): Completable {
+        val data = mapOf<String , Any>("currentRoomId" to roomId , "lastSeen" to FieldValue.serverTimestamp())
+        val ref = userCollection.document(mAuth.currentUser!!.uid)
+        return RxFirestore.updateDocument(ref , data)
     }
 
     override fun addContact(query: String): Maybe<User> {

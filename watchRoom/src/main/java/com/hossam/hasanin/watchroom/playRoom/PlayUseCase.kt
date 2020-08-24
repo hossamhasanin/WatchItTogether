@@ -37,8 +37,8 @@ class PlayUseCase @Inject constructor(private val repo: MainRepository) {
         }.subscribeOn(Schedulers.io())
     }
 
-    fun setUserState(userState: UserState , roomId: String): Observable<UserState>{
-        return repo.setUserState(roomId, userState).materialize<Unit>().map {
+    fun refreshUserState(userState: UserState, roomId: String): Observable<UserState>{
+        return repo.refreshUserState(roomId, userState).materialize<Unit>().map {
             userState
         }.toObservable().subscribeOn(Schedulers.io())
     }
