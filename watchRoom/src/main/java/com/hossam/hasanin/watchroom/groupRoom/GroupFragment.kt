@@ -42,6 +42,8 @@ class GroupFragment : Fragment() {
         val room: WatchRoom = (requireActivity() as WatchRoomActivity ).intent?.extras!!.getParcelable("room")!!
         val isLeader = (requireActivity() as WatchRoomActivity ).intent?.extras!!.getBoolean("leader")
 
+        displayRoomData(room)
+
         userStateAdapter.tellIfReady = {isReady ->
             if (isReady){
                 // show play button but only to the leader
@@ -53,6 +55,7 @@ class GroupFragment : Fragment() {
         }
 
         Log.v("soso" , "fragment here $room")
+        Log.v("soso" , "fragment userState ${viewModel.currentUserState}")
 
         viewModel.getUsers(room.id!! , isLeader)
 
@@ -103,6 +106,7 @@ class GroupFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         viewModel.leaveRoom()
+        disposable.dispose()
     }
 
 }

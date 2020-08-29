@@ -49,7 +49,7 @@ class NetworkDataSourceImp @Inject constructor(private val firestore: FirebaseFi
             Log.v("soso" , "hello from com user id = ${User.current!!.id}")
             val ref  = roomsCollection.document(roomId).collection(USERS_COLLECTION).document(mAuth.currentUser!!.uid)
             if (update){
-                ref.update("state" , userState.state)
+                ref.update("state" , UserState.READY)
                     .addOnSuccessListener {
                         Log.v("soso" , "hello from thr update")
                         emmiter.onComplete() }.addOnFailureListener {
@@ -73,7 +73,7 @@ class NetworkDataSourceImp @Inject constructor(private val firestore: FirebaseFi
                 if (users.size > 0){
                     removeUserState(roomId , emitter)
                 } else {
-                    roomsCollection.document(roomId).update("state" , WatchRoom.CANCELED)
+                    roomsCollection.document(roomId).update("state" , WatchRoom.FINISHED)
                         .addOnSuccessListener { emitter.onComplete() }.addOnFailureListener { emitter.onError(it) }
                 }
             }.addOnFailureListener { emitter.onError(it) }

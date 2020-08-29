@@ -25,7 +25,7 @@ exports.leavingRoomListener = functions.firestore.document("rooms/{room_id}/user
             }
         }
 
-        const goesTo = "userState";
+        const goesTo = context.params.room_id;
 
         return admin.messaging().sendToTopic(goesTo, payload).then(result => {
             console.log("Notification sent successfully " + goesTo);
@@ -72,14 +72,17 @@ async function sendInvitation(snap) {
         notification: {
             title: notificationTitle,
             body: notificationBody,
-            icon: "default"
+            icon: "default",
+            click_action: "OPEN_WATCHROOM"
         },
         data: {
             noti_type: "invite",
             sendedBy_Id: sendedBy.data().id,
             sendedBy_name: sendedByName,
             room_id: snap.data().id,
-            room_video_url: snap.data().mp4Url
+            room_video_url: snap.data().mp4Url,
+            room_name: snap.data().name,
+            room_desc: snap.data().desc
         }
     }
 

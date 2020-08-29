@@ -1,5 +1,6 @@
 package com.hossam.hasanin.watchroom
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -74,6 +75,7 @@ class UserStateAdapter @Inject constructor():
                     throw Exception("No such a state")
                 }
             }
+
 
             leader.text = if (userState.leader) "Leader" else "Member"
             videoPosition.text = "Position : ${userState.videoPosition.toString()}"

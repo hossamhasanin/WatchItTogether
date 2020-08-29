@@ -12,13 +12,13 @@ import kotlinx.android.parcel.Parcelize
 data class WatchRoom (
     @PrimaryKey(autoGenerate = true)
     val roomId: Int?,
-    val id: String = "",
-    val name: String = "",
-    val desc: String = "",
-    val mp4Url: String = "",
-    val state: Int? = null,
-    val users: ArrayList<String> = arrayListOf(),
-    val createdAt: Timestamp? = null
+    var id: String = "",
+    var name: String = "",
+    var desc: String = "",
+    var mp4Url: String = "",
+    var state: Int? = null,
+    var users: ArrayList<String> = arrayListOf(),
+    var createdAt: Timestamp? = null
 ): Parcelable{
 
     constructor(): this(null , "" , "" , "" , "" , null , arrayListOf() , null)

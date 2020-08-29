@@ -27,7 +27,9 @@ data class UserState (
             }
 
             override fun areContentsTheSame(oldItem: UserState, newItem: UserState): Boolean {
-                return oldItem.state == newItem.state || oldItem.videoPosition == newItem.videoPosition
+                return oldItem.state == newItem.state && oldItem.videoPosition == newItem.videoPosition
+                        && oldItem.name == newItem.name && oldItem.leader == newItem.leader
+                        && oldItem.gender == newItem.gender
             }
         }
     }

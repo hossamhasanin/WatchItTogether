@@ -23,7 +23,9 @@ import javax.inject.Inject
 import androidx.core.app.NotificationCompat.Builder
 import androidx.core.app.NotificationManagerCompat
 import com.hossam.hasanin.base.models.User
+import com.hossam.hasanin.base.models.WatchRoom
 import com.hossam.hasanin.watchroom.WatchRoomActivity
+import kotlin.collections.ArrayList
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
@@ -48,22 +50,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val defaultSoundUri: Uri? =
             RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
-        // Create an Intent for the activity you want to start
-        val resultIntent = Intent(this, WatchRoomActivity::class.java).apply {
-            val bundle = Bundle()
-            bundle.putString("roomId" , remoteMessage.data["room_id"])
-//            bundle.putString("videoUrl" , remoteMessage.data["room_video_url"])
-            bundle.putBoolean("leader" , false)
-            putExtras(bundle)
-        }
-        // Create the TaskStackBuilder
-        val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
-            // Add the intent, which inflates the back stack
-            addNextIntentWithParentStack(resultIntent)
-            // Get the PendingIntent containing the entire back stack
-            getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
-        }
-
         val notificationBuilder: Builder =
             Builder(
                 this,
@@ -72,20 +58,55 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle(remoteMessage.notification!!.title) //the "title" value you sent in your notification
                 .setContentText(remoteMessage.notification!!.body) //ditto
-                .setContentIntent(resultPendingIntent)
                 .setSound(defaultSoundUri)
 
-        if (remoteMessage.data["noti_type"] == "userState") {
-            if (remoteMessage.data["user_id"] != User.current!!.id){
+
+        when(remoteMessage.data["noti_type"]){
+            "invite" -> {
+                val room = WatchRoom()
+                room.name = remoteMessage.data["room_name"]!!
+                room.desc = remoteMessage.data["room_desc"]!!
+                room.mp4Url = remoteMessage.data["room_video_url"]!!
+                room.id = remoteMessage.data["room_id"]!!
+
+                // Create an Intent for the activity you want to start
+                val resultIntent = Intent(this, WatchRoomActivity::class.java).apply {
+                    val bundle = Bundle()
+                    bundle.putParcelable("room" , room)
+//            bundle.putString("videoUrl" , remoteMessage.data["room_video_url"])
+                    bundle.putBoolean("leader" , false)
+                    putExtras(bundle)
+                }
+
+                // Create the TaskStackBuilder
+                val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
+                    // Add the intent, which inflates the back stack
+                    addNextIntentWithParentStack(resultIntent)
+                    // Get the PendingIntent containing the entire back stack
+                    getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+                }
+
+                notificationBuilder.setContentIntent(resultPendingIntent)
+
                 with(NotificationManagerCompat.from(this)) {
                     notify(notificationId, notificationBuilder.build())
                 }
+
             }
-        } else {
-            with(NotificationManagerCompat.from(this)) {
-                notify(notificationId, notificationBuilder.build())
+            "userState" -> {
+                notificationBuilder.setContentIntent(null)
+
+                if (remoteMessage.data["user_id"] != User.current!!.id){
+                    with(NotificationManagerCompat.from(this)) {
+                        notify(notificationId, notificationBuilder.build())
+                    }
+                }
+            }
+            else -> {
+                throw Exception("Not matched notification type")
             }
         }
+
         Log.v("Notification" , "noti")
 
     }

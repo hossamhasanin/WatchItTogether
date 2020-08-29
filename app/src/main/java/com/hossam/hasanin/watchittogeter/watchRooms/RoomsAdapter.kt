@@ -56,9 +56,6 @@ class RoomsAdapter@Inject constructor():
         override fun onBind(pos: Int, roomWrapper: RoomWrapper, doAction: (WatchRoom) -> Unit) {
             name.text = roomWrapper.room?.name
             state.text = when(roomWrapper.room?.state){
-                WatchRoom.PAUSE -> {
-                    "Pause"
-                }
                 WatchRoom.RUNNING -> {
                     "Playing"
                 }

@@ -146,7 +146,8 @@ class UsersFragment : Fragment() {
             val mp4Url = layout.tv_mp4_url.text.toString()
             val desc = layout.tv_room_desc.text.toString()
             val watchRoom = WatchRoom(id = System.currentTimeMillis().toString(), name = roomName , desc = desc
-                , mp4Url = mp4Url , users = arrayListOf(viewModel.currentUser.uid , userId) , roomId = null)
+                , mp4Url = mp4Url , users = arrayListOf(viewModel.currentUser.uid , userId) ,
+                state = WatchRoom.PREPARING , roomId = null)
             viewModel.createRoom(watchRoom)
             ad.dismiss()
         }
