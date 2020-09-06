@@ -1,5 +1,6 @@
 package com.hossam.hasanin.watchittogeter.watchRooms
 
+import com.hossam.hasanin.base.models.UserState
 import com.hossam.hasanin.watchittogeter.repositories.MainRepository
 import com.hossam.hasanin.watchittogeter.users.UserWrapper
 import io.reactivex.Observable
@@ -20,7 +21,9 @@ class WatchRoomsUseCase @Inject constructor(private val repo: MainRepository){
                     rooms = it.map { RoomWrapper(it , UserWrapper.CONTENT) },
                     error = null,
                     loading = false,
-                    loadingMore = false
+                    loadingMore = false,
+                    refresh = false,
+                    searchedRoom = null , searchError = null , searchingRoom = false
                 )
             }
             it.error?.let {
@@ -28,14 +31,66 @@ class WatchRoomsUseCase @Inject constructor(private val repo: MainRepository){
                     rooms = listOf(),
                     error = it as Exception,
                     loadingMore = false,
-                    loading = false
+                    loading = false,
+                    refresh = false,
+                    searchedRoom = null , searchError = null , searchingRoom = false
                 )
             }
             return@map viewState.copy(
                 rooms = listOf(),
                 error = null,
                 loadingMore = false,
-                loading = false
+                loading = false,
+                refresh = false,
+                searchedRoom = null , searchError = null , searchingRoom = false
+            )
+        }.toObservable().subscribeOn(Schedulers.io())
+    }
+
+    fun getRoom(viewState: WatchRoomsViewState , roomId: String): Observable<WatchRoomsViewState>{
+        return repo.getRoom(roomId).materialize().map {
+            it.value?.let {
+                return@map viewState.copy(
+                    searchedRoom = it,
+                    searchError = null,
+                    searchingRoom = false
+                )
+            }
+            it.error?.let {
+                return@map viewState.copy(
+                    searchError = it as Exception,
+                    searchingRoom = false,
+                    searchedRoom = null
+                )
+            }
+            return@map viewState.copy(
+                searchingRoom = false,
+                searchedRoom = null,
+                searchError = null
+            )
+        }.toObservable().subscribeOn(Schedulers.io())
+    }
+
+    fun addUserStateToTheRoom(viewState: WatchRoomsViewState , roomId: String , userState:UserState , enterRoomState: Int): Observable<WatchRoomsViewState>{
+        return repo.addOrUpdateCurrentUserState(roomId , userState , false).materialize<Unit>().map {
+            it.value?.let {
+                return@map viewState.copy(
+                    enteringTheRoom = false,
+                    errorEntering = null,
+                    enteredRoomState = enterRoomState
+                )
+            }
+            it.error?.let {
+                return@map viewState.copy(
+                    enteringTheRoom = false,
+                    errorEntering = it as Exception,
+                    enteredRoomState = null
+                )
+            }
+            return@map viewState.copy(
+                enteringTheRoom = false,
+                errorEntering = null,
+                enteredRoomState = null
             )
         }.toObservable().subscribeOn(Schedulers.io())
     }

@@ -6,11 +6,13 @@ const db = admin.firestore();
 exports.leavingRoomListener = functions.firestore.document("rooms/{room_id}/users/{user_id}")
     .onDelete((snap, context) => {
         if (snap.data()["leader"]) {
-            changeLeader(context)
+            changeLeader(context);
         }
 
-        const notificationTitle = "There is someone left !"
-        const notificationBody = snap.data().name + " has left"
+        updateRoomStatus(context.params.room_id);
+
+        const notificationTitle = "There is someone left !";
+        const notificationBody = snap.data().name + " has left";
 
 
         const payload = {
@@ -49,6 +51,32 @@ async function changeLeader(context) {
     console.log("done , leader set to : " + firstUser);
 
     return res
+}
+
+async function updateRoomStatus(roomId) {
+    const room = db.collection("rooms").doc(roomId).collection("users");
+    const usersObjects = await room.get();
+    // this code is changed and no longer delete the user from the watch room users list
+    // in order to keep the invited users has the ability to access the room or be in thier history
+    // let usersList = snapshot.data()["users"];
+    // let userIndex = usersList.indexOf(userId);
+    // let changes = {};
+
+    // let to = 0;
+    // if (userIndex == usersList.length - 1) {
+    //     to = userIndex;
+    // } else {
+    //     to = userIndex - 1;
+    // }
+    // usersList.splice(userIndex, to);
+    // changes.users = usersList;
+    // change the state to finished
+    // (2) is the id for finished state
+    if (usersObjects.length == 0) {
+        changes.state = 2;
+    }
+    let update = await room.update(changes)
+    return update;
 }
 
 exports.sendRoomInvitation = functions.firestore.document("rooms/{room_id}")

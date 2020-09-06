@@ -9,5 +9,6 @@ data class PlayViewState(
     val error: Exception?,
     val roomSate: Int,
     val videoUrl: String?,
-    val showUsersState: Boolean
+    val showUsersState: Boolean,
+    val showOptions: Boolean
 )

@@ -66,23 +66,31 @@ class NetworkDataSourceImp @Inject constructor(private val firestore: FirebaseFi
         }
     }
 
-    override fun getUserOut(roomId: String , users: ArrayList<String>): Completable {
+    override fun getUserOut(roomId: String): Completable {
         return Completable.create {emitter ->
-            users.remove(User.current!!.id)
-            updateRoomUsersList(roomId , users).addOnSuccessListener {
-                if (users.size > 0){
-                    removeUserState(roomId , emitter)
-                } else {
-                    roomsCollection.document(roomId).update("state" , WatchRoom.FINISHED)
-                        .addOnSuccessListener { emitter.onComplete() }.addOnFailureListener { emitter.onError(it) }
-                }
-            }.addOnFailureListener { emitter.onError(it) }
+            Log.v("soso" , "getting out")
+            removeUserState(roomId, emitter)
+//            //users.remove(User.current!!.id)
+//            updateRoomUsersList(roomId , users).addOnSuccessListener {
+//                if (users.size > 0){
+//                    removeUserState(roomId , emitter)
+//                } else {
+//                    roomsCollection.document(roomId).update("state" , WatchRoom.FINISHED)
+//                        .addOnSuccessListener { emitter.onComplete() }.addOnFailureListener { emitter.onError(it) }
+//                }
+//            }.addOnFailureListener { emitter.onError(it) }
         }
     }
 
     override fun refreshUserState(roomId: String, userState: UserState): Completable {
         val ref = roomsCollection.document(roomId).collection(USERS_COLLECTION).document(mAuth.currentUser!!.uid)
-        return RxFirestore.updateDocument(ref , userState.toMap())
+        val data = mapOf("id" to userState.id
+            , "name" to userState.name
+            , "gender" to userState.gender
+            , "state" to userState.state
+            , "leader" to userState.leader
+            , "videoPosition" to userState.videoPosition)
+        return RxFirestore.updateDocument(ref , data)
     }
 
     private fun updateRoomUsersList(roomId: String , list: ArrayList<String>): Task<Void> {
@@ -90,8 +98,12 @@ class NetworkDataSourceImp @Inject constructor(private val firestore: FirebaseFi
     }
 
     private fun removeUserState(roomId: String , emitter: CompletableEmitter){
-        usersStateCollection(roomId).document(User.current!!.id!!).delete().addOnSuccessListener { emitter.onComplete() }
-            .addOnFailureListener { emitter.onError(it) }
+        usersStateCollection(roomId).document(User.current!!.id!!).delete().addOnSuccessListener {
+            Log.v("soso" , "get out successed")
+            emitter.onComplete() }
+            .addOnFailureListener {
+                it.printStackTrace()
+                emitter.onError(it) }
     }
 
     private fun usersStateCollection(roomId: String): CollectionReference {
@@ -113,6 +125,13 @@ class NetworkDataSourceImp @Inject constructor(private val firestore: FirebaseFi
         val data = mapOf<String , Any>("currentRoomId" to roomId , "lastSeen" to FieldValue.serverTimestamp())
         val ref = userCollection.document(mAuth.currentUser!!.uid)
         return RxFirestore.updateDocument(ref , data)
+    }
+
+    override fun updateCurrentRoomState(roomId: String , roomState: Int): Completable {
+        return Completable.create {emmit ->
+            roomsCollection.document(roomId).update("state" , roomState)
+                .addOnSuccessListener { emmit.onComplete() }.addOnFailureListener { emmit.onError(it) }
+        }
     }
 
     override fun addContact(query: String): Maybe<User> {
@@ -148,9 +167,21 @@ class NetworkDataSourceImp @Inject constructor(private val firestore: FirebaseFi
 
     override fun getWatchRoomsHistory(lastId: String): Maybe<List<WatchRoom>> {
         var query = roomsCollection.whereArrayContains("users" , mAuth.currentUser!!.uid)
-            .orderBy("timestamp" , Query.Direction.DESCENDING).limit(ROOMS_PER_PAGE)
+            .orderBy("createdAt" , Query.Direction.DESCENDING).limit(ROOMS_PER_PAGE)
         query = if (lastId.isNotEmpty()) query.startAfter(lastId) else query
         return RxFirestore.getCollection(query , WatchRoom::class.java)
+    }
+
+    override fun getRoom(roomId: String): Maybe<WatchRoom> {
+        val query = roomsCollection.whereEqualTo("id" , roomId).whereArrayContains("users" , mAuth.currentUser!!.uid)
+        return Maybe.create{emitter ->
+            query.get().addOnSuccessListener {
+                if (!it.isEmpty){
+                    val data = it.toObjects(WatchRoom::class.java)
+                    emitter.onSuccess(data[0])
+                }
+            }.addOnFailureListener { emitter.onError(it) }
+        }
     }
 
     override fun roomUsersListener(roomId: String): Observable<List<DocumentSnapshot>> {
@@ -165,6 +196,26 @@ class NetworkDataSourceImp @Inject constructor(private val firestore: FirebaseFi
                         emmiter.onNext(users!!)
                     }
             }
+        }
+    }
+
+    override fun roomStateListener(roomId: String): Observable<WatchRoom> {
+        return Observable.create {emmiter ->
+            roomsCollection.document(roomId)
+                .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+                    if (firebaseFirestoreException != null){
+                        emmiter.onError(firebaseFirestoreException)
+                    } else {
+                        val room = querySnapshot!!.toObject(WatchRoom::class.java)
+                        Log.v("soso" , "room source ${room.toString()}")
+                        if (room == null){
+                            // send room removed exception so that it will get out of watchRoomActivity
+                            emmiter.onError(Exception("The room has removed"))
+                        } else {
+                            emmiter.onNext(room)
+                        }
+                    }
+                }
         }
     }
 }

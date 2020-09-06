@@ -7,10 +7,13 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.hossam.hasanin.base.models.User
 import com.hossam.hasanin.base.models.UserState
 import kotlinx.android.synthetic.main.user_state_card.view.*
-import java.lang.Exception
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
 
 class UserStateAdapter @Inject constructor():
     ListAdapter<UserState, UserStateAdapter.ViewHolder>(UserState.diffUtil) {
@@ -25,11 +28,23 @@ class UserStateAdapter @Inject constructor():
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.onBind(position , getItem(position) , itemCount ,  tellIfReady)
+        holder.onBind(position, getItem(position), itemCount, tellIfReady)
+    }
+
+    var c = 1
+    override fun submitList(list: MutableList<UserState>?) {
+        Log.v("count", c.toString())
+        c += 1
+        super.submitList(list?.let { ArrayList(it) })
     }
 
     abstract class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
-        abstract fun onBind(pos: Int, userState: UserState , itemCount: Int , tellIfReady: (Boolean) -> Unit )
+        abstract fun onBind(
+            pos: Int,
+            userState: UserState,
+            itemCount: Int,
+            tellIfReady: (Boolean) -> Unit
+        )
     }
 
 //    class LoadingViewHolder(view: View): ViewHolder(view){
@@ -47,8 +62,13 @@ class UserStateAdapter @Inject constructor():
 
         var isReady = true
 
-        override fun onBind(pos: Int, userState: UserState , itemCount: Int , tellIfReady: (Boolean) -> Unit) {
-            name.text = userState.name
+        override fun onBind(
+            pos: Int,
+            userState: UserState,
+            itemCount: Int,
+            tellIfReady: (Boolean) -> Unit
+        ) {
+            name.text = if (User.current!!.name == userState.name) "Me" else userState.name
             if (userState.gender == 0){
                 Glide.with(img.context).load(R.drawable.female).into(img)
             } else {
@@ -68,7 +88,7 @@ class UserStateAdapter @Inject constructor():
                 UserState.PAUSE -> {
                     "Pause"
                 }
-                UserState.FINISHED ->{
+                UserState.FINISHED -> {
                     "Finished"
                 }
                 else -> {
@@ -78,7 +98,7 @@ class UserStateAdapter @Inject constructor():
 
 
             leader.text = if (userState.leader) "Leader" else "Member"
-            videoPosition.text = "Position : ${userState.videoPosition.toString()}"
+            videoPosition.text = "Position : ${getTime(userState.videoPosition!!)}"
 
             if (isReady){
                 isReady = userState.state != UserState.PAUSE
@@ -88,6 +108,14 @@ class UserStateAdapter @Inject constructor():
                 tellIfReady(isReady)
             }
 
+        }
+
+        private fun getTime(position: Long): String? {
+            val formatter = SimpleDateFormat("hh:mm:ss.SSS")
+
+//            val calendar = Calendar.getInstance()
+//            calendar.timeInMillis = position
+            return formatter.format(position)
         }
 
     }

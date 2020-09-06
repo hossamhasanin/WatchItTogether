@@ -1,6 +1,7 @@
 package com.hossam.hasanin.watchroom.groupRoom
 
 import android.util.Log
+import android.view.View
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import com.hossam.hasanin.base.models.User
@@ -15,9 +16,13 @@ import io.reactivex.subjects.PublishSubject
 class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseCase) : ViewModel() {
     private val _viewState = BehaviorSubject.create<GroupViewState>().apply {
         onNext(
-            GroupViewState(listOf() , true , null , WatchRoom.PREPARING)
+            GroupViewState(users = listOf() , loading = true , error = null ,
+                roomSate = WatchRoom.PREPARING , roomStateError = null ,
+                updatingRoomState = false)
         )
     }
+
+//     val usersState = PublishSubject.create<List<UserState>>()
 
     var currentUserState = UserState(id = User.current?.id!! , gender = User.current?.gender , name = User.current?.name!!
         , videoPosition = 0 , state = UserState.ENTERED , leader = false)
@@ -30,9 +35,10 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
     fun viewStateValue(): GroupViewState = _viewState.value!!
 
     private val _gettingUsers = PublishSubject.create<String>()
+    private val _roomStateListening = PublishSubject.create<String>()
     private val _updatingLastSeenData = PublishSubject.create<String>()
+    private val _updatingRoomState = PublishSubject.create<Int>()
     private val _settingCurrentUserState = PublishSubject.create<Boolean>()
-    private val _leaving = PublishSubject.create<Unit>()
 
 
     init {
@@ -40,14 +46,17 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
     }
 
     private fun bindUi(){
-        val dis = Observable.merge(_getUsers() , _leaveRoom() , _updateLastSeenData() , _setCurrentUserState()).doOnNext { postViewStateValue(it) }
+        val dis = Observable.merge(_updateLastSeenData() , _setCurrentUserState())
             .observeOn(AndroidSchedulers.mainThread()).subscribe({} , {
                 it.printStackTrace()
             })
-        val dis2 = _setCurrentUserState().doOnNext { postViewStateValue(it) }
+        val dis2 = Observable.merge(_roomStateListener() , _getUsers() , _updateRoomState()).doOnNext { postViewStateValue(it) }
             .observeOn(AndroidSchedulers.mainThread()).subscribe({} , {
                 it.printStackTrace()
             })
+//        val dis3 = .doOnNext { usersState.onNext(it) }.observeOn(AndroidSchedulers.mainThread()).subscribe({} , {
+//            it.printStackTrace()
+//        })
         compositeDisposable.addAll(dis , dis2)
     }
 
@@ -55,33 +64,43 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
         return _gettingUsers.switchMap { useCase.usersListener(viewStateValue() , it) }
     }
 
-    private fun _updateLastSeenData(): Observable<GroupViewState> {
-        return _updatingLastSeenData.switchMap { useCase.updateLastSeenData(viewStateValue() , it) }
+    private fun _updateLastSeenData(): Observable<Unit> {
+        return _updatingLastSeenData.switchMap { useCase.updateLastSeenData(it) }
     }
 
-    private fun _leaveRoom(): Observable<GroupViewState> {
-        return _leaving.switchMap { useCase.leaveTheRoom(viewStateValue() , cashedRoomId!!) }
+    fun _roomStateListener(): Observable<GroupViewState>{
+        return _roomStateListening.switchMap { useCase.roomStateListener(viewStateValue() , cashedRoomId!!) }
     }
 
-    private fun _setCurrentUserState(): Observable<GroupViewState> {
+    private fun _updateRoomState(): Observable<GroupViewState> {
+        return _updatingRoomState.switchMap { useCase.updateRoomState(viewStateValue() , cashedRoomId!! , it) }
+    }
+
+
+    private fun _setCurrentUserState(): Observable<Unit> {
         return _settingCurrentUserState.switchMap {
             Log.v("soso" , "_setCurrentUserState here $cashedRoomId")
-            useCase.addCurrentUserState(viewStateValue() , cashedRoomId!! , currentUserState , it) }
+            useCase.addOrUpdateCurrentUserState(cashedRoomId!! , currentUserState , it) }
     }
 
     fun initCurrentUserState() {
         val ids = viewStateValue().users.map { it.id }
         if (ids.contains(User.current?.id)) return
-        _settingCurrentUserState.onNext(false)
+        addOrUpdateUserState(false)
     }
 
-    fun updateUserState(){
-        _settingCurrentUserState.onNext(true)
+    fun addOrUpdateUserState(update: Boolean){
+        _settingCurrentUserState.onNext(update)
     }
 
-    fun leaveRoom(){
-        _leaving.onNext(Unit)
+    fun updateRoomState(roomState: Int){
+        if (viewStateValue().updatingRoomState) return
+        _updatingRoomState.onNext(roomState)
     }
+
+//    fun leaveRoom(){
+//        _leaving.onNext(Unit)
+//    }
 
     fun getUsers(roomId: String , isLeader: Boolean){
         if (viewStateValue().users.isNotEmpty()) return
@@ -89,6 +108,7 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
         Log.v("soso" , "getUsers here $roomId")
         currentUserState = currentUserState.copy(leader = isLeader)
         _gettingUsers.onNext(roomId)
+        _roomStateListening.onNext(roomId)
         _updatingLastSeenData.onNext(roomId)
     }
 
@@ -97,7 +117,7 @@ class GroupViewModel @ViewModelInject constructor(private val useCase: GroupUseC
     }
 
     override fun onCleared() {
-        super.onCleared()
         compositeDisposable.dispose()
+        super.onCleared()
     }
 }

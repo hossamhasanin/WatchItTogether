@@ -2,18 +2,24 @@ package com.hossam.hasanin.watchittogeter.watchRooms
 
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
+import com.hossam.hasanin.base.models.User
+import com.hossam.hasanin.base.models.UserState
+import com.hossam.hasanin.base.models.WatchRoom
 import com.hossam.hasanin.watchittogeter.users.UserWrapper
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
+import java.lang.Exception
 
 class WatchRoomsViewModel @ViewModelInject constructor(private val useCase: WatchRoomsUseCase) : ViewModel() {
     private val _viewState = BehaviorSubject.create<WatchRoomsViewState>().apply {
         onNext(
-            WatchRoomsViewState(rooms = listOf() , loading = true , loadingMore = false , error = null
-            , refresh = false )
+            WatchRoomsViewState(
+                rooms = listOf() , loading = true , loadingMore = false , error = null
+            , refresh = false , searchingRoom = false , searchedRoom = null , searchError = null,
+            enteringTheRoom = false , enteredRoomState = null , errorEntering = null)
         )
     }
 
@@ -25,6 +31,8 @@ class WatchRoomsViewModel @ViewModelInject constructor(private val useCase: Watc
     fun viewStateValue(): WatchRoomsViewState = _viewState.value!!
 
     private val _loadingRooms = PublishSubject.create<Unit>()
+    private val _gettingRoom = PublishSubject.create<String>()
+    private val _enteringRoom = PublishSubject.create<Map<String , Any>>()
 
     init {
         bindUi()
@@ -33,7 +41,7 @@ class WatchRoomsViewModel @ViewModelInject constructor(private val useCase: Watc
     }
 
     private fun bindUi(){
-        val disposable = loadRooms().doOnNext {
+        val disposable = Observable.merge(loadRooms() , getRoom()).doOnNext {
             postViewStateValue(it)
         }.observeOn(AndroidSchedulers.mainThread()).subscribe({}, {
             it.printStackTrace()
@@ -47,16 +55,58 @@ class WatchRoomsViewModel @ViewModelInject constructor(private val useCase: Watc
         val list = viewStateValue().rooms.toMutableList()
         list.add(RoomWrapper(null , UserWrapper.LOADING))
         postViewStateValue(
-            viewStateValue().copy(rooms = list , loadingMore = true)
+            viewStateValue().copy(rooms = list , loadingMore = true ,
+                searchedRoom = null , searchError = null , searchingRoom = false)
         )
         _loadingRooms.onNext(Unit)
+    }
+
+    fun refresh(){
+        if (viewStateValue().loadingMore || viewStateValue().refresh) return
+        postViewStateValue(viewStateValue().copy(refresh = true ,
+            searchedRoom = null , searchError = null , searchingRoom = false))
     }
 
     private fun loadRooms(): Observable<WatchRoomsViewState>{
         return _loadingRooms.switchMap { useCase.getWatchRoomsHistory(viewStateValue()) }
     }
 
+    private fun getRoom(): Observable<WatchRoomsViewState>{
+        return _gettingRoom.switchMap { useCase.getRoom(viewStateValue() , it) }
+    }
+
+    private fun enterRoom(): Observable<WatchRoomsViewState>{
+        return _enteringRoom.switchMap { useCase.addUserStateToTheRoom(viewStateValue() ,
+            it["roomId"] as String , it["userState"] as UserState , it["roomState"] as Int) }
+    }
+
+    fun searchFor(roomId:String){
+        if (viewStateValue().searchingRoom) return
+        postViewStateValue(viewStateValue().copy(searchingRoom = true ,
+            searchedRoom = null , searchError = null))
+        _gettingRoom.onNext(roomId)
+    }
+
+    fun enteringRoom(roomId: String , roomState: Int){
+        if (viewStateValue().enteringTheRoom) return
+        val userCurrentState = when(roomState){
+            WatchRoom.PREPARING->{ UserState.ENTERED }
+            WatchRoom.RUNNING->{UserState.PLAYING}
+            else->{throw  Exception("No such state")}
+        }
+        val userState = UserState(name = User.current!!.name , id = User.current!!.id!! , state = userCurrentState ,
+        leader = false , videoPosition = 0)
+        val data = mapOf<String , Any>("roomId" to roomId , "userState" to userState , "roomState" to roomState)
+        postViewStateValue(viewStateValue().copy(enteringTheRoom = true , errorEntering = null , enteredRoomState = null))
+        _enteringRoom.onNext(data)
+    }
+
     private fun postViewStateValue(viewState: WatchRoomsViewState){
         _viewState.onNext(viewState)
+    }
+
+    override fun onCleared() {
+        compositeDisposable.dispose()
+        super.onCleared()
     }
 }

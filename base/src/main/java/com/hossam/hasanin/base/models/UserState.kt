@@ -28,18 +28,17 @@ data class UserState (
 
             override fun areContentsTheSame(oldItem: UserState, newItem: UserState): Boolean {
                 return oldItem.state == newItem.state && oldItem.videoPosition == newItem.videoPosition
-                        && oldItem.name == newItem.name && oldItem.leader == newItem.leader
-                        && oldItem.gender == newItem.gender
+                        && oldItem.leader == newItem.leader
             }
         }
     }
 
-    fun toMap(): MutableMap<String , Any> {
-        return mutableMapOf("id" to id
-            , "name" to name
-            , "gender" to gender as Any
-            , "state" to state as Any
-            , "leader" to leader
-            , "videoPosition" to videoPosition as Any)
-    }
+//    fun toMap(): MutableMap<String , Any> {
+//        return mutableMapOf("id" to id
+//            , "name" to name
+//            , "gender" to gender as Any
+//            , "state" to state as Any
+//            , "leader" to leader
+//            , "videoPosition" to videoPosition as Any)
+//    }
 }

@@ -1,5 +1,6 @@
 package com.hossam.hasanin.watchittogeter.watchRooms
 
+import com.hossam.hasanin.base.models.WatchRoom
 import java.lang.Exception
 
 data class WatchRoomsViewState(
@@ -7,5 +8,11 @@ data class WatchRoomsViewState(
     val loading: Boolean,
     val error: Exception?,
     val loadingMore: Boolean,
-    val refresh: Boolean
+    val refresh: Boolean,
+    val searchedRoom: WatchRoom?,
+    val searchingRoom: Boolean,
+    val searchError: Exception?,
+    val enteringTheRoom: Boolean,
+    val enteredRoomState: Int?,
+    val errorEntering: Exception?
 )

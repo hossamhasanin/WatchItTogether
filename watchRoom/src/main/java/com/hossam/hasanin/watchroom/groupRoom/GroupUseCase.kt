@@ -36,28 +36,59 @@ class GroupUseCase @Inject constructor(private val repo: MainRepository) {
         }.subscribeOn(Schedulers.io())
     }
 
-    fun addCurrentUserState(viewState: GroupViewState , roomId: String , userState: UserState , update: Boolean): Observable<GroupViewState>{
-        return repo.addOrUpdateCurrentUserState(roomId, userState , update).materialize<Unit>().map {
-            return@map viewState.copy(loading = false , error = null)
-        }.toObservable().subscribeOn(Schedulers.io())
-    }
-
-    fun leaveTheRoom(viewState: GroupViewState , roomId: String): Observable<GroupViewState>{
-        val ids = viewState.users.map { it.id } as ArrayList
-        return repo.getUserOut(roomId , ids).materialize<Unit>().map {
+    fun roomStateListener(viewState: GroupViewState , roomId: String): Observable<GroupViewState>{
+        return repo.roomStateListener(roomId).materialize().map {
             it.value?.let {
-                return@map viewState
+                return@map viewState.copy(
+                    roomSate = it.state!!,
+                    loading = false,
+                    roomStateError = null
+                )
             }
             it.error?.let {
-                return@map viewState.copy(error = it as Exception)
+                //Log.v("soso" , it.toString())
+                return@map viewState.copy(
+                    roomSate = null,
+                    loading = false,
+                    roomStateError = it as Exception
+                )
             }
-            return@map viewState
+            return@map viewState.copy(
+                roomSate = null,
+                loading = false,
+                roomStateError = null
+            )
+        }.subscribeOn(Schedulers.io())
+    }
+
+    fun addOrUpdateCurrentUserState(roomId: String, userState: UserState, update: Boolean): Observable<Unit>{
+        return repo.addOrUpdateCurrentUserState(roomId, userState , update).materialize<Unit>().map {
+            Unit
         }.toObservable().subscribeOn(Schedulers.io())
     }
 
-    fun updateLastSeenData(viewState: GroupViewState , roomId: String) : Observable<GroupViewState>{
+//    fun leaveTheRoom(viewState: GroupViewState , roomId: String): Observable<GroupViewState>{
+//        val ids = viewState.users.map { it.id } as ArrayList
+//        return repo.getUserOut(roomId , ids).materialize<Unit>().map {
+//            it.value?.let {
+//                return@map viewState
+//            }
+//            it.error?.let {
+//                return@map viewState.copy(error = it as Exception)
+//            }
+//            return@map viewState
+//        }.toObservable().subscribeOn(Schedulers.io())
+//    }
+
+    fun updateLastSeenData(roomId: String) : Observable<Unit>{
         return repo.updateCurrentRoomAndLastSeen(roomId).materialize<Unit>().map {
-            return@map viewState
+            Unit
+        }.toObservable().subscribeOn(Schedulers.io())
+    }
+
+    fun updateRoomState(viewState: GroupViewState, roomId: String , roomState: Int) : Observable<GroupViewState>{
+        return repo.updateCurrentRoomState(roomId , roomState).materialize<Unit>().map {
+            return@map viewState.copy(updatingRoomState = false)
         }.toObservable().subscribeOn(Schedulers.io())
     }
 

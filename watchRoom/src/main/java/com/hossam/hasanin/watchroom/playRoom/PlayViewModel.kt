@@ -15,7 +15,7 @@ import io.reactivex.subjects.PublishSubject
 class PlayViewModel @ViewModelInject constructor(private val useCase: PlayUseCase): ViewModel() {
     private val _viewState = BehaviorSubject.create<PlayViewState>().apply {
         onNext(
-            PlayViewState(listOf() , true , null , WatchRoom.PREPARING , null , false)
+            PlayViewState(listOf() , true , null , WatchRoom.PREPARING , null , false , true)
         )
     }
 
@@ -60,13 +60,17 @@ class PlayViewModel @ViewModelInject constructor(private val useCase: PlayUseCas
         postViewStateValue(viewStateValue().copy(showUsersState = open))
     }
 
+    fun optionsDisplay(open: Boolean){
+        postViewStateValue(viewStateValue().copy(showOptions = open))
+    }
+
     private fun postViewStateValue(viewState: PlayViewState){
         _viewState.onNext(viewState)
     }
 
     override fun onCleared() {
-        super.onCleared()
         compositeDisposable.clear()
+        super.onCleared()
     }
 
 

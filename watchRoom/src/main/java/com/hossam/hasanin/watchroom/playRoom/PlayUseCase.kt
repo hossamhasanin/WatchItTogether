@@ -3,6 +3,7 @@ package com.hossam.hasanin.watchroom.playRoom
 import android.util.Log
 import com.hossam.hasanin.base.models.UserState
 import com.hossam.hasanin.watchittogeter.repositories.MainRepository
+import com.hossam.hasanin.watchroom.groupRoom.GroupViewState
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import java.lang.Exception

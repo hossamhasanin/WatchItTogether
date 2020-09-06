@@ -5,7 +5,7 @@ import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
+import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,13 +19,13 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.hossam.hasanin.base.models.UserState
+import com.hossam.hasanin.base.models.WatchRoom
 import com.hossam.hasanin.watchroom.R
 import com.hossam.hasanin.watchroom.UserStateAdapter
 import com.hossam.hasanin.watchroom.WatchRoomActivity
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import kotlinx.android.synthetic.main.group_fragment.*
 import kotlinx.android.synthetic.main.play_fragment.*
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -36,18 +36,18 @@ class PlayFragment : Fragment() {
     private val viewModel by viewModels<PlayViewModel>()
 
     var player : SimpleExoPlayer? = null
-    var roomId: String? = null
+    var room: WatchRoom? = null
     lateinit var mediaFactory : ProgressiveMediaSource.Factory
     @Inject lateinit var playbackStateListener: PlaybackStateListener
     @Inject lateinit var userStateAdapter: UserStateAdapter
 
     lateinit var disposable: Disposable
 
-    var videoUrl: String? = null
     private var playWhenReady = true
     private var currentWindow = 0
     private var playbackPosition: Long = 0
     private var job: Job? = null
+    private var widthOfScreen: Float = 0f
 
 
     override fun onCreateView(
@@ -65,19 +65,24 @@ class PlayFragment : Fragment() {
             DefaultDataSourceFactory(context, "roomPlayer")
         mediaFactory = ProgressiveMediaSource.Factory(dataSourceFactory)
 
+        widthOfScreen = calculateWidthOfScreen()
+
         playbackStateListener.trackState = {
             when(it){
-                ExoPlayer.STATE_IDLE ->{
+                ExoPlayer.STATE_IDLE -> {
                     // video gets prepared by the player
-                    viewModel.updateUserState(UserState.READY , null)
+                    viewModel.updateUserState(UserState.READY, null)
                 }
-                ExoPlayer.STATE_READY ->{
+                ExoPlayer.STATE_READY -> {
                     // update the video position in the database
 
-                    if (player!!.isPlaying){
+                    if (player!!.isPlaying) {
                         job = CoroutineScope(Dispatchers.IO).launch {
-                            while (true){
-                                viewModel.updateUserState(UserState.PLAYING , player!!.contentPosition)
+                            while (true) {
+                                viewModel.updateUserState(
+                                    UserState.PLAYING,
+                                    player!!.contentPosition
+                                )
 
                                 delay(120000)
                             }
@@ -85,18 +90,18 @@ class PlayFragment : Fragment() {
                     } else {
                         // update state the user stopped the video
                         stopSendingVideoPositionJob()
-                        viewModel.updateUserState(UserState.PAUSE , null)
+                        viewModel.updateUserState(UserState.PAUSE, null)
                     }
                 }
-                ExoPlayer.STATE_BUFFERING ->{
+                ExoPlayer.STATE_BUFFERING -> {
                     // update state the video stopped because of some problem
                     stopSendingVideoPositionJob()
-                    viewModel.updateUserState(UserState.PAUSE , null)
+                    viewModel.updateUserState(UserState.PAUSE, null)
                 }
-                ExoPlayer.STATE_ENDED ->{
+                ExoPlayer.STATE_ENDED -> {
                     // video finished
                     stopSendingVideoPositionJob()
-                    viewModel.updateUserState(UserState.FINISHED , null)
+                    viewModel.updateUserState(UserState.FINISHED, null)
                 }
                 else ->{
 
@@ -104,36 +109,53 @@ class PlayFragment : Fragment() {
             }
         }
 
-        videoUrl = (requireActivity() as WatchRoomActivity).intent?.extras!!.getString("videoUrl")
-        roomId = (requireActivity() as WatchRoomActivity).intent?.extras!!.getString("roomId")
+        room = (requireActivity() as WatchRoomActivity).intent?.extras!!.getParcelable("room")
         val isLeader = (requireActivity() as WatchRoomActivity).intent?.extras!!.getBoolean("leader")
 
-        viewModel.getUsers(roomId!! , isLeader)
+        viewModel.getUsers(room!!.id, isLeader)
 
 
         disposable = viewModel.viewState().observeOn(AndroidSchedulers.mainThread()).subscribe {
             if (it.loading){
-                loading.visibility = View.VISIBLE
+                if (loading_states != null) {
+                    loading_states.visibility = View.VISIBLE
+                }
             } else {
-                loading.visibility = View.GONE
+                if (loading_states != null) {
+                    loading_states.visibility = View.GONE
+                }
             }
             if (it.error != null){
-                Toast.makeText(requireContext() , it.error.localizedMessage , Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), it.error.localizedMessage, Toast.LENGTH_LONG).show()
             }
             if (it.users.isNotEmpty()){
-                userStateAdapter.submitList(it.users)
+                userStateAdapter.submitList(it.users.toMutableList())
                 userStateAdapter.notifyDataSetChanged()
             }
 
             if (it.showUsersState){
+                if (cont_users_rec != null){
                 cont_users_rec.visibility = View.VISIBLE
-                ObjectAnimator.ofFloat(cont_users_rec , "translationX" , -100f).apply {
+                ObjectAnimator.ofFloat(cont_users_rec, "layout_width", -300f).apply {
                     duration = 700
                     start()
                 }
+                }
             } else {
-                cont_users_rec.visibility = View.GONE
-                cont_users_rec.translationX = 100f
+                if (cont_users_rec != null) {
+                    ObjectAnimator.ofFloat(cont_users_rec, "layout_width", 300f).apply {
+                        duration = 700
+                        start()
+                    }
+                    cont_users_rec.visibility = View.GONE
+                }
+                if (options != null) {
+                    if (it.showOptions) {
+                        options.visibility = View.VISIBLE
+                    } else {
+                        options.visibility = View.GONE
+                    }
+                }
             }
 
         }
@@ -149,6 +171,14 @@ class PlayFragment : Fragment() {
             viewModel.viewUserStateRec(false)
         }
 
+        iv_go_back.setOnClickListener {
+            requireActivity().onBackPressed()
+        }
+
+        player_view.setOnClickListener {
+            viewModel.optionsDisplay(!viewModel.viewStateValue().showOptions)
+        }
+
     }
 
     private fun stopSendingVideoPositionJob(){
@@ -161,7 +191,7 @@ class PlayFragment : Fragment() {
     private fun initPlayer(){
         player = SimpleExoPlayer.Builder(requireContext()).build()
         player_view.player = player
-        val mediaSource = mediaFactory.createMediaSource(Uri.parse(videoUrl))
+        val mediaSource = mediaFactory.createMediaSource(Uri.parse(room!!.mp4Url))
 
         player!!.playWhenReady = playWhenReady
         player!!.seekTo(currentWindow, playbackPosition)
@@ -171,12 +201,7 @@ class PlayFragment : Fragment() {
 
     @SuppressLint("InlinedApi")
     private fun hideSystemUi() {
-        player_view.systemUiVisibility = (View.SYSTEM_UI_FLAG_LOW_PROFILE
-                or View.SYSTEM_UI_FLAG_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
+        player_view.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
     override fun onStart() {
@@ -205,12 +230,29 @@ class PlayFragment : Fragment() {
         }
     }
 
+    private fun calculateWidthOfScreen(): Float{
+        val displayMetrics = DisplayMetrics()
+        requireActivity().windowManager.defaultDisplay.getMetrics(displayMetrics)
+        val width: Int = displayMetrics.widthPixels
+
+        return width.toFloat()
+    }
+
 
     override fun onStop() {
         super.onStop()
         if (Util.SDK_INT >= 24) {
             releasePlayer()
         }
+        stopSendingVideoPositionJob()
+        viewModel.updateUserState(UserState.PAUSE, null)
+    }
+
+    override fun onDestroy() {
+        stopSendingVideoPositionJob()
+//        viewModel.updateUserState(UserState.PAUSE, null)
+        disposable.dispose()
+        super.onDestroy()
     }
 
 }

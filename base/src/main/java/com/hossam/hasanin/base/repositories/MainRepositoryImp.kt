@@ -41,16 +41,28 @@ class MainRepositoryImp @Inject constructor(private val networkDataSourceImp: Da
         return networkDataSourceImp.getWatchRoomsHistory(lastId)
     }
 
+    override fun getRoom(roomId: String): Maybe<WatchRoom> {
+        return networkDataSourceImp.getRoom(roomId)
+    }
+
     override fun roomUsersListener(roomId: String): Observable<List<DocumentSnapshot>> {
         return networkDataSourceImp.roomUsersListener(roomId)
     }
 
-    override fun getUserOut(roomId: String , users: ArrayList<String>): Completable {
-        return networkDataSourceImp.getUserOut(roomId, users)
+    override fun roomStateListener(roomId: String): Observable<WatchRoom> {
+        return networkDataSourceImp.roomStateListener(roomId)
+    }
+
+    override fun getUserOut(roomId: String): Completable {
+        return networkDataSourceImp.getUserOut(roomId)
     }
 
     override fun addOrUpdateCurrentUserState(roomId: String, userState: UserState , update: Boolean): Completable {
         return networkDataSourceImp.addOrUpdateCurrentUserState(roomId , userState , update)
+    }
+
+    override fun updateCurrentRoomState(roomId: String, roomState: Int): Completable {
+        return networkDataSourceImp.updateCurrentRoomState(roomId, roomState)
     }
 
     override fun refreshUserState(roomId: String, userState: UserState): Completable {
