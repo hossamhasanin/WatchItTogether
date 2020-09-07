@@ -57,13 +57,13 @@ class RoomsAdapter@Inject constructor():
             name.text = roomWrapper.room?.name
             state.text = when(roomWrapper.room?.state){
                 WatchRoom.RUNNING -> {
-                    "Playing"
+                    "The video is playing now without you , you are missing a lot !"
                 }
                 WatchRoom.PREPARING -> {
-                    "Ready"
+                    "In the grouping room yet ."
                 }
                 WatchRoom.FINISHED -> {
-                    "Finished"
+                    "Well , bal the room ended ."
                 }
                 else -> {
                     throw Exception("No such state")

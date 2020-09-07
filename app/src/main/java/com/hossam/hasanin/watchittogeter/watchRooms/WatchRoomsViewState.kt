@@ -13,6 +13,6 @@ data class WatchRoomsViewState(
     val searchingRoom: Boolean,
     val searchError: Exception?,
     val enteringTheRoom: Boolean,
-    val enteredRoomState: Int?,
+    val enteredRoom: WatchRoom?,
     val errorEntering: Exception?
 )

@@ -1,6 +1,7 @@
 package com.hossam.hasanin.watchittogeter.watchRooms
 
 import com.hossam.hasanin.base.models.UserState
+import com.hossam.hasanin.base.models.WatchRoom
 import com.hossam.hasanin.watchittogeter.repositories.MainRepository
 import com.hossam.hasanin.watchittogeter.users.UserWrapper
 import io.reactivex.Observable
@@ -71,26 +72,19 @@ class WatchRoomsUseCase @Inject constructor(private val repo: MainRepository){
         }.toObservable().subscribeOn(Schedulers.io())
     }
 
-    fun addUserStateToTheRoom(viewState: WatchRoomsViewState , roomId: String , userState:UserState , enterRoomState: Int): Observable<WatchRoomsViewState>{
+    fun addUserStateToTheRoom(viewState: WatchRoomsViewState, roomId: String, userState:UserState, room: WatchRoom): Observable<WatchRoomsViewState>{
         return repo.addOrUpdateCurrentUserState(roomId , userState , false).materialize<Unit>().map {
-            it.value?.let {
-                return@map viewState.copy(
-                    enteringTheRoom = false,
-                    errorEntering = null,
-                    enteredRoomState = enterRoomState
-                )
-            }
             it.error?.let {
                 return@map viewState.copy(
                     enteringTheRoom = false,
                     errorEntering = it as Exception,
-                    enteredRoomState = null
+                    enteredRoom = null
                 )
             }
             return@map viewState.copy(
                 enteringTheRoom = false,
                 errorEntering = null,
-                enteredRoomState = null
+                enteredRoom = room
             )
         }.toObservable().subscribeOn(Schedulers.io())
     }

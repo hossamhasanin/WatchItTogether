@@ -1,6 +1,5 @@
 package com.hossam.hasanin.watchittogeter.watchRooms
 
-import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -51,9 +50,9 @@ class WatchRoomsFragment : Fragment() {
            // Go to the room if still available
 
             if (it.state == WatchRoom.PREPARING) {
-                navigationManager.navigateTo(NavigationManager.WATCH_ROOM , Bundle() , requireActivity())
+                goTo(R.id.groupFragment , it , false)
             } else if (it.state == WatchRoom.RUNNING) {
-                goTo(R.id.playFragment)
+                goTo(R.id.playFragment , it , false)
             }else {
                 Toast.makeText(requireContext() , "Well unfortunatlly this room is unavailable" , Toast.LENGTH_LONG).show()
             }
@@ -105,15 +104,15 @@ class WatchRoomsFragment : Fragment() {
                 loading.visibility = View.GONE
             }
 
-            if (it.enteredRoomState != null){
-                when(it.enteredRoomState){
+            if (it.enteredRoom != null){
+                when(it.enteredRoom.state){
                     WatchRoom.PREPARING->{
                         // go to group fragment
-                        goTo(R.id.groupFragment)
+                        goTo(R.id.groupFragment , it.enteredRoom , false)
                     }
                     WatchRoom.RUNNING->{
                         // go to playing fragment
-                        goTo(R.id.playFragment)
+                        goTo(R.id.playFragment , it.enteredRoom , false)
                     }
                 }
             }
@@ -184,22 +183,28 @@ class WatchRoomsFragment : Fragment() {
                 throw Exception("No such a state")
             }
         }
-        d.setPositiveButton("Enter >"){ dialog: DialogInterface?, which: Int ->
+        layout.btn_enter.setOnClickListener {
             // enter the room
             if (room.state != WatchRoom.FINISHED){
-                viewModel.enteringRoom(room.id , room.state!!)
+                viewModel.enteringRoom(room.id , room)
             } else {
                 Toast.makeText(requireContext() , "The room is not available , it is finished" , Toast.LENGTH_LONG).show()
             }
+            ad.dismiss()
+        }
+
+        layout.btn_cancle.setOnClickListener {
             ad.dismiss()
         }
         ad.show()
 
     }
 
-    private fun goTo(dist: Int){
+    private fun goTo(dist: Int , room: WatchRoom , isLeader: Boolean){
         val bundle = Bundle()
         bundle.putInt("goTo" , dist)
+        bundle.putParcelable("room" , room)
+        bundle.putBoolean("leader" , isLeader)
         navigationManager.navigateTo(NavigationManager.WATCH_ROOM , bundle , requireActivity())
     }
 

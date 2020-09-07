@@ -113,8 +113,8 @@ class UserStateAdapter @Inject constructor():
         private fun getTime(position: Long): String? {
             val formatter = SimpleDateFormat("hh:mm:ss.SSS")
 
-//            val calendar = Calendar.getInstance()
-//            calendar.timeInMillis = position
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = position
             return formatter.format(position)
         }
 

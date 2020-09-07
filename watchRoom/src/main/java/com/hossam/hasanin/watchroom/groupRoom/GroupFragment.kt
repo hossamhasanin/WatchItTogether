@@ -76,19 +76,19 @@ class GroupFragment : Fragment() {
 
         disposable = viewModel.viewState().observeOn(AndroidSchedulers.mainThread()).subscribe {
             Log.v("dodo" , it.toString())
-            if (it.loading){
-                loading.visibility = View.VISIBLE
-            } else {
-                if (loading != null){
+            if (loading != null) {
+                if (it.loading) {
+                    loading.visibility = View.VISIBLE
+                } else {
                     loading.visibility = View.GONE
                 }
             }
 
-            if (it.error != null){
-                tv_error_mess.visibility = View.VISIBLE
-                tv_error_mess.text = it.error.localizedMessage
-            } else {
-                if (tv_error_mess != null) {
+            if (tv_error_mess != null) {
+                if (it.error != null) {
+                    tv_error_mess.visibility = View.VISIBLE
+                    tv_error_mess.text = it.error.localizedMessage
+                } else {
                     tv_error_mess.visibility = View.GONE
                 }
             }

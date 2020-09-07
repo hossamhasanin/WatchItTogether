@@ -19,7 +19,7 @@ class WatchRoomsViewModel @ViewModelInject constructor(private val useCase: Watc
             WatchRoomsViewState(
                 rooms = listOf() , loading = true , loadingMore = false , error = null
             , refresh = false , searchingRoom = false , searchedRoom = null , searchError = null,
-            enteringTheRoom = false , enteredRoomState = null , errorEntering = null)
+            enteringTheRoom = false , enteredRoom = null , errorEntering = null)
         )
     }
 
@@ -41,7 +41,7 @@ class WatchRoomsViewModel @ViewModelInject constructor(private val useCase: Watc
     }
 
     private fun bindUi(){
-        val disposable = Observable.merge(loadRooms() , getRoom()).doOnNext {
+        val disposable = Observable.merge(loadRooms() , getRoom() , enterRoom()).doOnNext {
             postViewStateValue(it)
         }.observeOn(AndroidSchedulers.mainThread()).subscribe({}, {
             it.printStackTrace()
@@ -77,7 +77,7 @@ class WatchRoomsViewModel @ViewModelInject constructor(private val useCase: Watc
 
     private fun enterRoom(): Observable<WatchRoomsViewState>{
         return _enteringRoom.switchMap { useCase.addUserStateToTheRoom(viewStateValue() ,
-            it["roomId"] as String , it["userState"] as UserState , it["roomState"] as Int) }
+            it["roomId"] as String , it["userState"] as UserState , it["room"] as WatchRoom) }
     }
 
     fun searchFor(roomId:String){
@@ -87,17 +87,17 @@ class WatchRoomsViewModel @ViewModelInject constructor(private val useCase: Watc
         _gettingRoom.onNext(roomId)
     }
 
-    fun enteringRoom(roomId: String , roomState: Int){
+    fun enteringRoom(roomId: String , room: WatchRoom){
         if (viewStateValue().enteringTheRoom) return
-        val userCurrentState = when(roomState){
+        val userCurrentState = when(room.state){
             WatchRoom.PREPARING->{ UserState.ENTERED }
             WatchRoom.RUNNING->{UserState.PLAYING}
             else->{throw  Exception("No such state")}
         }
         val userState = UserState(name = User.current!!.name , id = User.current!!.id!! , state = userCurrentState ,
         leader = false , videoPosition = 0)
-        val data = mapOf<String , Any>("roomId" to roomId , "userState" to userState , "roomState" to roomState)
-        postViewStateValue(viewStateValue().copy(enteringTheRoom = true , errorEntering = null , enteredRoomState = null))
+        val data = mapOf<String , Any>("roomId" to roomId , "userState" to userState , "room" to room)
+        postViewStateValue(viewStateValue().copy(searchedRoom = null , searchingRoom = false , enteringTheRoom = true , errorEntering = null , enteredRoom = null))
         _enteringRoom.onNext(data)
     }
 
